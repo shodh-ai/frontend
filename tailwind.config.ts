@@ -12,9 +12,18 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        dashBoardButtonBg: "#404040",
+        dashBoardBorderColor: "#222222",
+        barBgColor:"#252527",
+        mainBackcolor:"#566FE9",
+      },
+
+      backgroundImage:{
+        'bakground-gradient': 'linear-gradient(180deg, #242c5d 3%, black 30%, black 60% , #242c5d 95%)',
       },
     },
   },
   plugins: [],
+  
 };
 export default config;

@@ -2,6 +2,8 @@ import React from 'react'
 
 export default function page() {
   return (
-    <div>Dashboard page</div>
+    <div>
+      Teacher Dashboard page
+    </div>
   )
 }
