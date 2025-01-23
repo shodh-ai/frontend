@@ -9,6 +9,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      keyframes:{
+        slide: {
+          "0%": {transform : "translateX(50%)", opacity: "0"},
+          "100%": {tranform: "translateX(0%)", opacity: "1"}
+        }
+      },
+      animation:{
+        "slide-left": "slide 1s forwards"
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

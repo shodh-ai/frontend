@@ -12,11 +12,11 @@ export default function StudentDash() {
         <SemesterScore />
       </BackgroundBox>
       <div className="w-full flex gap-5 max-lg:flex-col">
-      <BackgroundBox width="w-1/2">
-        <AssignmentAssigned />
+        <BackgroundBox width="w-full max-w-1/2">
+          <AssignmentAssigned />
         </BackgroundBox>
-        <BackgroundBox width="w-1/2">
-        <LeaderShipScore />
+        <BackgroundBox width="w-full max-w-1/2">
+          <LeaderShipScore />
         </BackgroundBox>
       </div>
       <ResumeHereSection />

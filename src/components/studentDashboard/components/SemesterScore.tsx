@@ -9,7 +9,7 @@ export default function SemesterScore({ title = "Semester Score" }) {
       <div className="flex max-[600px]:flex-col max-[600px]:gap-4">
         {ScoreTerms.map((item, index) => (
           <div
-            className={`flex w-1/4 max-[600px]:w-full max-[600px]:justify-center  max-[600px]:border-none ${
+            className={`flex w-full max-w-1/4 max-[600px]:w-full max-[600px]:justify-center  max-[600px]:border-none ${
               index > 0 ? "border-l" : ""
             } ${index > 0 ? "px-2" : "pr-2"}  ${
               index > 0 ? "border-[var(--Border-Secondary)]" : ""
