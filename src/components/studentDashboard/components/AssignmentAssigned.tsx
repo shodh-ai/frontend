@@ -4,7 +4,7 @@ import { useDashboardSemesterScore } from "../../models/DashBoardScore";
 export default function AssignmentAssigned() {
   const { AssignmentTable } = useDashboardSemesterScore();
   return (
-    <div className="w-1/2 border flex flex-col gap-3 border-[var(--Border-Secondary)]    rounded-xl p-6 bg-black text-white max-lg:w-full">
+    <>
       <div className="text-base font-semibold">Assignment Assigned</div>
       
       <div className={`side_scroll flex w-full flex-col max-h-[261px] max-sm:max-w-[560px] lg:overflow-y-auto max-lg:overflow-auto  `}>
@@ -32,6 +32,6 @@ export default function AssignmentAssigned() {
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }
