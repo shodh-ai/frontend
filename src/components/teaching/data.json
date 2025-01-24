@@ -1,0 +1,82 @@
+{
+  "chatMessages": [
+    {
+      "id": "msg1",
+      "sender": "teacher",
+      "name": "Mrs. Smith",
+      "message": "Good morning class! Today we'll be covering Newton's Laws of Motion. Is everyone ready to begin?",
+      "timestamp": "2024-01-24T09:00:00.000Z",
+      "read": true
+    },
+    {
+      "id": "msg2", 
+      "sender": "student",
+      "name": "Alex",
+      "message": "Yes, ready to learn about Newton's Laws!",
+      "timestamp": "2024-01-24T09:00:15.000Z",
+      "read": true
+    },
+    {
+      "id": "msg3",
+      "sender": "teacher",
+      "name": "Mrs. Smith", 
+      "message": "Great! Let's start with the First Law - An object at rest stays at rest, and an object in motion stays in motion, unless acted upon by an external force.",
+      "timestamp": "2024-01-24T09:01:00.000Z",
+      "read": true
+    },
+    {
+      "id": "msg4",
+      "sender": "student",
+      "name": "Emily",
+      "message": "So is that why we need seatbelts in cars? Because our body wants to keep moving forward when the car stops?",
+      "timestamp": "2024-01-24T09:01:45.000Z",
+      "read": true
+    },
+    {
+      "id": "msg5",
+      "sender": "teacher",
+      "name": "Mrs. Smith",
+      "message": "Excellent observation, Emily! That's exactly right. This is a perfect real-world application of Newton's First Law.",
+      "timestamp": "2024-01-24T09:02:15.000Z",
+      "read": true
+    }
+  ],
+  "studentDoubts": [
+    {
+      "id": "doubt1",
+      "studentName": "Michael",
+      "question": "Can you explain the difference between mass and weight again?",
+      "topic": "Newton's Laws",
+      "timestamp": "2024-01-24T09:15:00.000Z",
+      "status": "answered",
+      "priority": "high"
+    },
+    {
+      "id": "doubt2",
+      "studentName": "Sarah",
+      "question": "Why does friction always oppose motion? And does it always act in the opposite direction?",
+      "topic": "Forces and Friction",
+      "timestamp": "2024-01-24T09:20:00.000Z",
+      "status": "pending",
+      "priority": "medium"
+    },
+    {
+      "id": "doubt3",
+      "studentName": "David",
+      "question": "In the equation F=ma, if we double the force, does that mean acceleration doubles too?",
+      "topic": "Newton's Second Law",
+      "timestamp": "2024-01-24T09:25:00.000Z",
+      "status": "pending",
+      "priority": "high"
+    },
+    {
+      "id": "doubt4",
+      "studentName": "Lisa",
+      "question": "Could you give more examples of action-reaction pairs in everyday life?",
+      "topic": "Newton's Third Law",
+      "timestamp": "2024-01-24T09:30:00.000Z",
+      "status": "pending",
+      "priority": "medium"
+    }
+  ]
+}

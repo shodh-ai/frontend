@@ -32,7 +32,7 @@ export default function QuestionsBox() {
               alt="image"
               height={24}
               width={24}
-              className="cursor-pointer"
+              className="cursor-pointer max-lg:hidden "
               onClick={() => setExpandBox(!expandBox)}
             />
           </div>
