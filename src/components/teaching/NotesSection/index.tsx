@@ -1,5 +1,6 @@
 'use client'
-import Switch from '../Switch';
+
+import Switch from "../Switch";
 
 interface NotesSectionProps {
   isNotesEnabled: boolean;
@@ -9,12 +10,8 @@ interface NotesSectionProps {
 const NotesSection = ({ isNotesEnabled, setIsNotesEnabled }: NotesSectionProps) => {
   return (
     <>
-      
       <div className='flex flex-1 items-center gap-2 justify-end'>
-        {isNotesEnabled && (
-          <button className="p-2 mr-5 rounded bg-blue-500">Save Notes</button>
-        )}
-        <p>Notes</p>
+        <p>Doubts</p>
         <Switch isOn={isNotesEnabled} onToggle={() => setIsNotesEnabled(!isNotesEnabled)} />
       </div>
     </>

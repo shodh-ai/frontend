@@ -1,12 +1,12 @@
 'use client'
 import React, { useState, useRef, useEffect } from 'react'
-import ChatOverlay from '@/components/Overlay/ChatOverlay'
-import VideoPlayer from '@/components/VideoPlayer'
-import NotesSection from '@/components/NotesSection'
-import AudioControl from '@/components/AudioControl'
-import ControlBar from '@/components/ControlBar'
-import { FileModal, ErrorModal, CompletionModal } from '@/components/Modal'
-import Image from 'next/image'
+import NotesSection from './NotesSection'
+import AudioControl from './AudioControl'
+import NotesOverlay from '@/src/components/teaching/Overlay/NotesOverlay'
+import { FileModal,ErrorModal,CompletionModal } from './Modal'
+import ControlBar from './ControlBar'
+import ChatOverlay from './Overlay/ChatOverlay'
+import VideoPlayer from '../VideoPlayer'
 
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
@@ -220,7 +220,7 @@ const Teaching = () => {
   };
 
   return (
-    <div className='relative h-screen w-full overflow-hidden'>
+    <div className='relative h-full w-full overflow-hidden'>
       <VideoPlayer
         videoRef={videoRef}
         isVideoPlaying={isVideoPlaying}
@@ -236,7 +236,7 @@ const Teaching = () => {
         onClose={handleVideoToggle}
       />
       
-      <div className='absolute bottom-0 left-0 right-0 flex w-full items-center gap-2 m-2 z-30'>
+      <div className='absolute bottom-0 left-0 right-0 flex w-full items-center gap-2 my-2 z-30'>
         <ControlBar
           isVideoPlaying={isVideoPlaying}
           isRecording={isRecording}
@@ -254,13 +254,7 @@ const Teaching = () => {
       </div>
 
       {isNotesEnabled && (
-        <div className="absolute inset-0 bottom-20 backdrop-blur-sm z-30">
-          <div className="w-full h-full p-2 flex flex-col gap-4">
-            <p className="w-full h-full flex-1 bg-black/30 text-white p-4 rounded-lg">
-              <Image src="/image-2.png" alt='notes' width={5000} height={5000} className='w-full h-full'/>
-            </p>
-          </div>
-        </div>
+        <NotesOverlay isVisible={isNotesEnabled} setIsNotesEnabled={setIsNotesEnabled}/>
       )}
 
       <FileModal
