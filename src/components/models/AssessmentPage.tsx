@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StudentAssessmentModelTab } from "@/src/app/student/assessment/models/AssessmentMode";
+import { StudentAssessmentModelTab , StudentAssessmentButton } from "@/src/app/student/assessment/models/AssessmentMode";
 
 export function useAssessmentModelPage(){
 
@@ -7,6 +7,12 @@ export function useAssessmentModelPage(){
         {label:"Loop Function Assignment", icon: '/dashboardReferenceIcon.svg'},
         {label:"Loop Transfer Function Topic Disscussion", icon: '/dashboardNotesIcon.svg'},
     ];
+    const ResumeButtons : StudentAssessmentButton[]=[
+      {label:"Continue Here", icon: '/assessment/playIcon.svg'},
+        {label:"", icon: '/assessment/GotoIcon.svg'},
+        {label:"Save for later", icon: '/assessment/SaveLaterIcon.svg'},
+
+    ]
 
     const [activeTab, setActiveTab] = useState<number>(0);
     
@@ -15,5 +21,5 @@ export function useAssessmentModelPage(){
       };
     
 
-    return {AssessmentsTabs, activeTab, handleSelectTab};
+    return {AssessmentsTabs,ResumeButtons, activeTab, handleSelectTab};
 };

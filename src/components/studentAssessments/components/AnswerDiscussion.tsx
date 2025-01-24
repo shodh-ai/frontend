@@ -3,6 +3,7 @@ import React from "react";
 // import ColorSwitches from '../common/ToggleButton'
 import styles from "../common/ToggleButton.module.css";
 import LinearDeterminate from "../common/ProgressBar";
+import ChatMain from "./ChatMain";
 
 export default function AnswerDiscussion({ title = "Open - Loop Function" }) {
   return (
@@ -36,9 +37,11 @@ export default function AnswerDiscussion({ title = "Open - Loop Function" }) {
           {title}
         </div>
       </div>
-      <div className="w-full h-full max-h-[478px] overflow-y-auto">daga</div>
+      <div className="side_scroll w-full h-full max-h-[478px] overflow-y-auto">
+        <ChatMain/>
+      </div>
       <div className="w-full flex  text-xs">
-        <div className="bg-[#0D0D0D] p-3 flex items-center justify-between rounded-tl-md rounded-bl-md w-full">
+        <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] border-r-0 p-3 flex items-center justify-between rounded-tl-md rounded-bl-md w-full">
           <div className="flex gap-3 w-full">
             <Image src={"/UploadFileIcon.svg"} alt="image" height={24} width={24}/>
             <input placeholder="Ask me anything!" className="border-none focus:outline-none   bg-transparent w-full text-nowrap" type="text"/>

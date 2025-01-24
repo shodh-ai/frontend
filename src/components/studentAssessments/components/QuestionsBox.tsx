@@ -23,7 +23,7 @@ export default function QuestionsBox() {
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          <div className="flex justify-between lg:max-w-[384px]  w-full">
+          <div className="flex justify-between   w-full">
             <div className="text-xs tracking-widest font-semibold text-assessmentTextColor">
               QUESTIONS
             </div>
