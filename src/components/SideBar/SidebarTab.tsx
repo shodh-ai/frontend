@@ -21,7 +21,7 @@ export default function SidebarTab() {
             <div
               key={index}
               className={`cursor-pointer p-3 ${
-                activeTab === index ? "bg-[#566FE9] rounded-xl" : ""
+                activeTab === index ? "bg-mainBackcolor rounded-xl" : ""
               }`}
               onClick={() => handleSelectTab(index)}
             >

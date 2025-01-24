@@ -4,7 +4,7 @@ import { useDashboardSemesterScore } from "../../models/DashBoardScore";
 export default function LeaderShipScore() {
   const { LeaderShipTable } = useDashboardSemesterScore();
   return (
-    <div className="w-1/2 border flex flex-col gap-3 border-[var(--Border-Secondary)] rounded-xl p-6 bg-black text-white max-lg:w-full ">
+    <>
       <div className="text-base font-semibold">Leadership Score</div>
       
       <div
@@ -40,6 +40,6 @@ export default function LeaderShipScore() {
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }
