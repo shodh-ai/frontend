@@ -34,9 +34,9 @@ export default function RootLayout({
         <StoreProvider>
           <div className="w-full flex">
                 <SidebarTab />
-                <div className="w-full flex flex-1 flex-col ">   
+                <div className="w-full flex  flex-col ">   
                   <HeaderTop title="Dashboard" name="Kate Mott" />  
-                  <div className="h-[calc(100vh-68px)] w-[calc(100vw-75px)] overflow-auto bg-bakground-gradient flex-1">{children}</div>
+                  <div className="h-[calc(100vh-68px)] w-[calc(100vw-75px)] text-white overflow-auto bg-bakground-gradient ">{children}</div>
                 </div>
               </div>
         </StoreProvider>
