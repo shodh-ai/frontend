@@ -12,6 +12,11 @@ interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
 }
 
+type SpeechRecognitionErrorEvent = {
+  error: string;
+  message?: string;
+};
+
 interface SpeechRecognitionResult {
   [index: number]: {
     transcript: string;
@@ -34,7 +39,7 @@ interface SpeechRecognitionInstance extends EventTarget {
   stop(): void;
   onresult: (event: SpeechRecognitionEvent) => void;
   onend: () => void;
-  onerror: (event: any) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
 }
 
 declare global {
@@ -93,7 +98,7 @@ const Teaching = () => {
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Subtitles recognition error:', event.error);
     };
 
@@ -132,7 +137,7 @@ const Teaching = () => {
       setIsRecording(false);
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('User recognition error:', event.error);
       setIsRecording(false);
     };
