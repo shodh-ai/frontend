@@ -1,6 +1,5 @@
 'use client'
 import { MdClose, MdMicNone, MdPause, MdUploadFile, MdPlayArrow, MdSend } from 'react-icons/md'
-import { useEffect } from 'react'
 
 interface ControlBarProps {
   isVideoPlaying: boolean;
