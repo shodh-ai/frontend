@@ -1,8 +1,12 @@
 import Image from "next/image";
 import React from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/store";
 import { useDashboardSemesterScore } from "../../models/DashBoardScore";
 export default function SemesterScore({ title = "Semester Score" }) {
   const { ScoreTerms } = useDashboardSemesterScore();
+   const {StudentData} = useSelector((state : RootState)=>state.student);
+   
   return (
     <>
       <div className="text-base font-semibold">{title}</div>
