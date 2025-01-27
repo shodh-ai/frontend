@@ -39,6 +39,12 @@ body {
 
 }
 
+<<<<<<< Updated upstream
+=======
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+>>>>>>> Stashed changes
 
 @layer utilities {
   .text-balance {
