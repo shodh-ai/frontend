@@ -3,7 +3,7 @@ import { DashBoardModel, AssignmentAssigned , LeaderShipScoreAll, ResumeSection 
 export function useDashboardSemesterScore (){
     const ScoreTerms: DashBoardModel[] = [
         {label: 'Overall Score', value:64.05, improvement:"+2% improved", improvFlag:true},
-        {label: 'Accuracy', value:85.76, improvement:"-1.5% improved", improvFlag:false},
+        {label: 'Accuracy', value:85.76, improvement:"-1.5% reduced", improvFlag:false},
         {label: 'Critical Thinking Skills', value:90.67, improvement:"+3% improved", improvFlag:true},
         {label: 'Total Time Spent', value:128, improvement:"+6% improved", improvFlag:true},
 
