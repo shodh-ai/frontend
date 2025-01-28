@@ -4,7 +4,7 @@ import { useSimulationModel } from "../../models/SimulationPage";
 export default function TaskBrief() {
   const { TaskDiscussionDetails } = useSimulationModel();
   return (
-    <div className="flex flex-col gap-4 side_scroll w-full max-h-[480px] h-full  overflow-y-auto">
+    <div className="flex flex-col gap-4 side_scroll w-full max-h-[550px] h-full  overflow-y-auto">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="text-xl font-semibold">Task Brief</div>
         <div className="text-sm text-[var(--Content-Primary-static)]">
