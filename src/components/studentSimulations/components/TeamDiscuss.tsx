@@ -12,11 +12,11 @@ export default function TeamDiscuss() {
 
   const { TemMembersDetails } = useSimulationModel();
   return (
-    <div className="flex flex-col gap-4 ">
+    <div className="flex flex-col h-full gap-4 ">
       <div className="text-xl font-bold">Team Discussion</div>
 
       {showchat ? (
-        <div className="flex flex-col justify-between">
+        <div className="flex flex-col justify-between h-full">
           <TeamChat handlesChatDiscuss={handlesChatDiscuss} />
           <div className="w-full flex  text-xs">
             <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] border-r-0 p-3 flex items-center justify-between rounded-tl-md rounded-bl-md w-full">
