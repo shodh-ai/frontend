@@ -12,7 +12,13 @@ export function useSimulationModel() {
     { label: "Team Discussion" },
     { label: "History" },
   ];
-
+  const SimulationAnalysisTabs: ProjectDiscussionTabs[] = [
+    { label: "Dashboard" },
+    { label: "Metrics" },
+    { label: "Customer Purchase" },
+    { label: "Sales" },
+    { label: "Financial" },
+  ];
   const TemMembersDetails: TeamMembersTab[] = [
     {
       name: "Emma Stone",
@@ -84,6 +90,7 @@ export function useSimulationModel() {
 
   return {
     SinulationProjectTabs,
+    SimulationAnalysisTabs,
     SimulationCompButtons,
     TemMembersDetails,
     TaskDiscussionDetails,

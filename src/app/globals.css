@@ -39,6 +39,10 @@ body {
 
 }
 
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
