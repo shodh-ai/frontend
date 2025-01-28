@@ -7,12 +7,11 @@ import ResumeHereSection from "../components/ResumeHereSection";
 import BackgroundBox from "@/src/lib/UI/BackgroundBox";
 import { useAppDispatch } from "@/src/hooks/reduxHooks";
 import { getStudentDashboard } from "@/src/features/student/studentThunks";
-// import { useSelector } from "react-redux";
-// import { RootState } from "@/src/store";
+
 
 export default function StudentDash() {
   const dispatch = useAppDispatch();
-  // const {StudentData} = useSelector((state : RootState)=>state.student);
+  
 
   
 
