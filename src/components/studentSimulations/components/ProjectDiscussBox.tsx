@@ -12,7 +12,7 @@ export default function ProjectDiscussBox() {
     handleSelectTab,
   } = useSimulationModel();
   return (
-    <div className="border flex flex-col min-h-[664px] max-lg:max-w-full gap-4 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white">
+    <div className="border flex flex-col min-h-[664px] w-1/2 max-lg:w-full gap-4 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white">
       <div className="text-xs font-bold tracking-widest text-assessmentTextColor ">
         PROJECT MANAGEMENT
       </div>
