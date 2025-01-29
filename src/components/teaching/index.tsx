@@ -225,7 +225,8 @@ const Teaching = () => {
   };
 
   return (
-    <div className='relative h-full w-full overflow-hidden'>
+    <div className='h-full w-full p-8'>
+      <div className='relative h-full w-full overflow-hidden rounded-xl bg-black '>
       <VideoPlayer
         videoRef={videoRef}
         isVideoPlaying={isVideoPlaying}
@@ -255,11 +256,14 @@ const Teaching = () => {
         <NotesSection
           isNotesEnabled={isNotesEnabled}
           setIsNotesEnabled={setIsNotesEnabled}
+          handleVideoToggle={handleVideoToggle}
         />
       </div>
 
       {isNotesEnabled && (
-        <NotesOverlay isVisible={isNotesEnabled} setIsNotesEnabled={setIsNotesEnabled}/>
+        <NotesOverlay isVisible={isNotesEnabled} setIsNotesEnabled={setIsNotesEnabled}
+        setIsFileModalOpen={setIsFileModalOpen}
+        handleVideoToggle={handleVideoToggle}/>
       )}
 
       <FileModal
@@ -283,6 +287,7 @@ const Teaching = () => {
           setIsVideoPlaying(false);
         }}
       />
+      </div>
     </div>
   )
 }
