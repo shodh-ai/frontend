@@ -44,7 +44,7 @@ const ControlBar = ({
   };
 
   return (
-    <div className='flex *:rounded *:border-gray-800 *:border flex-[3] items-end'>
+    <div className='flex *:rounded *:border-gray-800 *:border flex-[3] items-end w-full'>
       <div className='flex p-2 mx-2 gap-5 flex-1 items-end relative'>
         <MdUploadFile
           size="1.5em"
