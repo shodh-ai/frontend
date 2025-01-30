@@ -10,7 +10,7 @@ export default function SideBarExpand({ handleSideBarTab }: Props) {
   const { sideBarExpandTabs, activeTab, handleSelectTab } =
     useSidebarViewModel();
   return (
-    <div className="min-h-[100vh] min-w-[216px] py-6 flex  items-center flex-col gap-4 sticky left-0 text-white bg-black z-20">
+    <div className="min-h-[100vh] min-w-[216px] py-5 flex  items-center flex-col gap-4 sticky left-0 text-white bg-black z-20">
       <div className="flex items-center gap-3 ">
         <Image
           src={"/mainDrawer.svg"}
