@@ -16,11 +16,20 @@ export function useSidebarViewModel() {
     { label: 'TempProfilePhoto', icon: '/tempProfilePhoto'},
   ];
 
+  const sideBarExpandTabs: TabModel[] = [
+    { label: 'Dashboard', icon: '/dashboardStack' },
+    { label: 'Course Map', icon: '/dashboardEducation' },
+    { label: 'Doubts', icon: '/dashboardNotesIcon' },
+    { label: 'Reference Material', icon: '/dashboardReferenceIcon' },
+
+  ];
+
+
   const [activeTab, setActiveTab] = useState<number>(0);
 
   const handleSelectTab = (tabIndex: number) => {
     setActiveTab(tabIndex);
   };
 
-  return { tabs,headerTabs,  activeTab, handleSelectTab };
+  return { tabs,sideBarExpandTabs,headerTabs,  activeTab, handleSelectTab };
 }
