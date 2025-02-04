@@ -1,13 +1,16 @@
 import Image from "next/image";
 import React from "react";
 import { useSimulationModel } from "../../models/SimulationPage";
-import { Teamchat } from "../../studentAssessments/components/chat";
+import {
+  // Teamchat,
+  discussions,
+} from "../../studentAssessments/components/chat";
 
 type Props = {
   handlesChatDiscuss: () => void;
 };
 export default function TeamChat({ handlesChatDiscuss }: Props) {
-  const { TemMembersDetails, SimulationCompButtons } = useSimulationModel();
+  const { TemMembersDetails } = useSimulationModel();
   return (
     <div className="flex flex-col justify-between  gap-3 side_scroll w-full max-h-[500px] h-full  overflow-y-auto">
       <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] p-3 gap-4 flex items-center justify-between rounded-md w-full">
@@ -33,7 +36,7 @@ export default function TeamChat({ handlesChatDiscuss }: Props) {
         </div>
       </div>
 
-      {Teamchat.map((text, index) => (
+      {/* {Teamchat.map((text, index) => (
         <div key={index} className="mb-5 flex flex-col">
           {text.req && (
             <div className="w-fit max-w-[80%] self-start   text-sm  px-4 py-1 mb-2 shadow-md">
@@ -70,9 +73,31 @@ export default function TeamChat({ handlesChatDiscuss }: Props) {
             </div>
           )}
         </div>
+      ))} */}
+
+      {discussions.map((member, index) => (
+        <div
+          key={index}
+          className="mb-5 flex flex-col gap-2 w-full max-w-[90%] self-start   text-sm  px-4 py-1  shadow-md p-1 border border-dashBoardBorderColor"
+        >
+          <div className="text-sm font-semibold text-assessmentTextColor">
+            {member.agent}
+          </div>
+          <div className="text-sm font-semibold">Revenue</div>
+          <div className="flex w-full">
+            <div className="max-w-[100px] text-sm  text-[var(--Content-Primary-static)]  w-full">
+              Change:
+            </div>
+            <div className="text-sm">{member.metric_changes.revenue?.change}</div>
+          </div>
+          <div className="flex w-full">
+            <div className="max-w-[100px] text-sm  text-[var(--Content-Primary-static)]  w-full">
+              Reason:
+            </div>
+            <div className="text-sm">{member.metric_changes.revenue?.reason}</div>
+          </div>
+        </div>
       ))}
-
-
     </div>
   );
 }

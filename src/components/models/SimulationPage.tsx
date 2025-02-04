@@ -15,9 +15,9 @@ export function useSimulationModel() {
   const SimulationAnalysisTabs: ProjectDiscussionTabs[] = [
     { label: "Dashboard" },
     { label: "Metrics" },
-    { label: "Customer Purchase" },
-    { label: "Sales" },
-    { label: "Financial" },
+  //   { label: "Customer Purchase" },
+  //   { label: "Sales" },
+  //   { label: "Financial" },
   ];
   const TemMembersDetails: TeamMembersTab[] = [
     {
@@ -82,7 +82,7 @@ export function useSimulationModel() {
       },
     },
   ];
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<number>(1);
 
   const handleSelectTab = (tabIndex: number) => {
     setActiveTab(tabIndex);

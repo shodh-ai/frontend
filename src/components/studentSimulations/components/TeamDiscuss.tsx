@@ -19,7 +19,7 @@ export default function TeamDiscuss() {
         <div className="flex flex-col justify-between h-full">
           <TeamChat handlesChatDiscuss={handlesChatDiscuss} />
           <div className="w-full flex  text-xs">
-            <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] border-r-0 p-3 flex items-center justify-between rounded-tl-md rounded-bl-md w-full">
+            <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] border-r-0 p-3 max-sm:p-1 flex items-center justify-between rounded-tl-md rounded-bl-md w-full">
               <div className="flex gap-3 w-full">
                 <Image
                   src={"/UploadFileIcon.svg"}
@@ -35,9 +35,9 @@ export default function TeamDiscuss() {
               </div>
               <Image src={"/SendIcon.svg"} alt="image" height={32} width={32} />
             </div>
-            <div className="flex justify-around items-center p-3 b w-full max-w-[119px] bg-barBgColor rounded-tr-md rounded-br-md">
+            <div className="flex justify-around items-center p-3 max-sm:p-1 b w-full max-w-[119px] max-sm:max-w-[40px] bg-barBgColor rounded-tr-md rounded-br-md">
               <Image src={"/TalkIcon.svg"} alt="image" height={32} width={32} />
-              <div>Talk to me</div>
+              <div className="max-sm:hidden">Talk to me</div>
             </div>
           </div>
         </div>
