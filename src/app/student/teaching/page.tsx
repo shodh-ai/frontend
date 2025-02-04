@@ -1,10 +1,9 @@
-import Teaching from '@/src/components/teaching'
-import React from 'react'
+"use client";
+import Teaching from "@/src/components/teaching";
+import React, { useEffect } from "react";
 
 const TeachingPage = () => {
-  return (
-    <Teaching/>
-  )
-}
+  return <Teaching />;
+};
 
-export default TeachingPage
+export default TeachingPage;

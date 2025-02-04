@@ -1,13 +1,13 @@
-'use client'
-import React, { useState, useRef, useEffect } from 'react'
-import NotesSection from './NotesSection'
-import AudioControl from './AudioControl'
-import NotesOverlay from '@/src/components/teaching/Overlay/NotesOverlay'
-import { FileModal,ErrorModal,CompletionModal } from './Modal'
-import ControlBar from './ControlBar'
-import ChatOverlay from './Overlay/ChatOverlay'
-import VideoPlayer from '../VideoPlayer'
-
+"use client";
+import React, { useState, useRef, useEffect } from "react";
+import NotesSection from "./NotesSection";
+import AudioControl from "./AudioControl";
+import NotesOverlay from "@/src/components/teaching/Overlay/NotesOverlay";
+import { FileModal, ErrorModal, CompletionModal } from "./Modal";
+import ControlBar from "./ControlBar";
+import ChatOverlay from "./Overlay/ChatOverlay";
+import VideoPlayer from "../VideoPlayer";
+import { Message } from "@/src/models/DoubtModel";
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
 }
@@ -54,25 +54,29 @@ declare global {
 }
 
 const Teaching = () => {
-  const [isFileModalOpen, setIsFileModalOpen] = useState(false)
-  const [isNotesEnabled, setIsNotesEnabled] = useState(false)
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
-  const [transcript, setTranscript] = useState('')
-  const [showErrorModal, setShowErrorModal] = useState(false)
-  const [showCompletionModal, setShowCompletionModal] = useState(false)
-  const [subtitles, setSubtitles] = useState('')
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [isNotesEnabled, setIsNotesEnabled] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [subtitles, setSubtitles] = useState("");
 
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const userRecognitionRef = useRef<SpeechRecognitionInstance | null>(null)
-  const subtitleRecognitionRef = useRef<SpeechRecognitionInstance | null>(null)
-  const isSubtitlesEnabled = useRef(false)
-
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const userRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const subtitleRecognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const isSubtitlesEnabled = useRef(false);
+  const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
+  const [mainConversationHistory, setMainConversationHistory] = useState<
+    Message[]
+  >([]);
   // Video subtitles speech recognition setup
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
@@ -82,24 +86,28 @@ const Teaching = () => {
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const latestResult = event.results[event.results.length - 1];
       if (latestResult) {
-        const transcript = latestResult[0]?.transcript || '';
+        const transcript = latestResult[0]?.transcript || "";
         setSubtitles(transcript);
       }
     };
 
     recognition.onend = () => {
       // Restart subtitles recognition if video is still playing
-      if (videoRef.current && !videoRef.current.paused && isSubtitlesEnabled.current) {
+      if (
+        videoRef.current &&
+        !videoRef.current.paused &&
+        isSubtitlesEnabled.current
+      ) {
         try {
           recognition.start();
         } catch (error) {
-          console.error('Subtitles recognition restart error:', error);
+          console.error("Subtitles recognition restart error:", error);
         }
       }
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.error('Subtitles recognition error:', event.error);
+      console.error("Subtitles recognition error:", event.error);
     };
 
     subtitleRecognitionRef.current = recognition;
@@ -109,7 +117,7 @@ const Teaching = () => {
         try {
           subtitleRecognitionRef.current.stop();
         } catch (error) {
-          console.error('Subtitles recognition cleanup error:', error);
+          console.error("Subtitles recognition cleanup error:", error);
         }
       }
     };
@@ -117,9 +125,10 @@ const Teaching = () => {
 
   // User input speech recognition setup
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
@@ -129,7 +138,7 @@ const Teaching = () => {
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const latestResult = event.results[event.results.length - 1];
       if (latestResult && latestResult.isFinal) {
-        setTranscript(prev => prev + latestResult[0]?.transcript + ' ');
+        setTranscript((prev) => prev + latestResult[0]?.transcript + " ");
       }
     };
 
@@ -138,7 +147,7 @@ const Teaching = () => {
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.error('User recognition error:', event.error);
+      console.error("User recognition error:", event.error);
       setIsRecording(false);
     };
 
@@ -149,7 +158,7 @@ const Teaching = () => {
         try {
           userRecognitionRef.current.stop();
         } catch (error) {
-          console.error('User recognition cleanup error:', error);
+          console.error("User recognition cleanup error:", error);
         }
       }
     };
@@ -159,14 +168,14 @@ const Teaching = () => {
   useEffect(() => {
     if (videoRef.current) {
       const video = videoRef.current;
-      
+
       const handlePlay = () => {
         if (subtitleRecognitionRef.current) {
           try {
             isSubtitlesEnabled.current = true;
             subtitleRecognitionRef.current.start();
           } catch (error) {
-            console.error('Subtitles recognition error:', error);
+            console.error("Subtitles recognition error:", error);
           }
         }
       };
@@ -177,17 +186,17 @@ const Teaching = () => {
             isSubtitlesEnabled.current = false;
             subtitleRecognitionRef.current.stop();
           } catch (error) {
-            console.error('Subtitles recognition error:', error);
+            console.error("Subtitles recognition error:", error);
           }
         }
       };
 
-      video.addEventListener('play', handlePlay);
-      video.addEventListener('pause', handlePause);
+      video.addEventListener("play", handlePlay);
+      video.addEventListener("pause", handlePause);
 
       return () => {
-        video.removeEventListener('play', handlePlay);
-        video.removeEventListener('pause', handlePause);
+        video.removeEventListener("play", handlePlay);
+        video.removeEventListener("pause", handlePause);
       };
     }
   }, []);
@@ -204,7 +213,7 @@ const Teaching = () => {
       }
       setIsRecording(!isRecording);
     } catch (error) {
-      console.error('Toggle recording error:', error);
+      console.error("Toggle recording error:", error);
     }
   };
 
@@ -216,7 +225,7 @@ const Teaching = () => {
         videoRef.current.play();
       }
       setIsVideoPlaying(!isVideoPlaying);
-      setSubtitles('');
+      setSubtitles("");
     }
   };
 
@@ -224,72 +233,99 @@ const Teaching = () => {
     setShowCompletionModal(true);
   };
 
+  useEffect(() => {
+    const savedConversationHistory = localStorage.getItem(
+      "conversationHistory"
+    );
+    const savedmainConversationHistory = localStorage.getItem(
+      "mainConversationHistory"
+    );
+    if (savedConversationHistory) {
+      setConversationHistory(JSON.parse(savedConversationHistory));
+    }
+    if (savedmainConversationHistory) {
+      setMainConversationHistory(JSON.parse(savedmainConversationHistory));
+    }
+  }, [isNotesEnabled]);
+
   return (
-    <div className='h-full w-full p-8'>
-      <div className='relative h-full w-full overflow-hidden rounded-xl bg-black '>
-      <VideoPlayer
-        videoRef={videoRef}
-        isVideoPlaying={isVideoPlaying}
-        handleVideoToggle={handleVideoToggle}
-        subtitles={subtitles}
-        onVideoEnd={handleVideoEnd}
-      />
-
-      <AudioControl />
-
-      <ChatOverlay
-        isVisible={!isVideoPlaying}
-        onClose={handleVideoToggle}
-      />
-      
-      <div className='absolute bottom-0 left-0 right-0 flex w-full items-center gap-2 my-2 z-30'>
-        <ControlBar
+    <div className="h-full w-full p-8">
+      <div className="relative h-full w-full overflow-hidden rounded-xl bg-black ">
+        <VideoPlayer
+          videoRef={videoRef}
           isVideoPlaying={isVideoPlaying}
-          isRecording={isRecording}
-          transcript={transcript}
           handleVideoToggle={handleVideoToggle}
-          toggleRecording={toggleRecording}
-          setTranscript={setTranscript}
-          setIsFileModalOpen={setIsFileModalOpen}
-          setShowErrorModal={setShowErrorModal}
+          subtitles={subtitles}
+          onVideoEnd={handleVideoEnd}
         />
-        <NotesSection
-          isNotesEnabled={isNotesEnabled}
-          setIsNotesEnabled={setIsNotesEnabled}
-          handleVideoToggle={handleVideoToggle}
+
+        <AudioControl />
+
+        <ChatOverlay
+          isVisible={!isVideoPlaying}
+          onClose={handleVideoToggle}
+          conversationHistory={conversationHistory}
+          mainConversationHistory={mainConversationHistory}
+          setMainConversationHistory={setMainConversationHistory}
         />
-      </div>
 
-      {isNotesEnabled && (
-        <NotesOverlay isVisible={isNotesEnabled} setIsNotesEnabled={setIsNotesEnabled}
-        setIsFileModalOpen={setIsFileModalOpen}
-        handleVideoToggle={handleVideoToggle}/>
-      )}
+        <div className="absolute bottom-0 left-0 right-0 flex w-full items-center gap-2 my-2 z-30">
+          <ControlBar
+            isVideoPlaying={isVideoPlaying}
+            isRecording={isRecording}
+            transcript={transcript}
+            handleVideoToggle={handleVideoToggle}
+            toggleRecording={toggleRecording}
+            setTranscript={setTranscript}
+            setIsFileModalOpen={setIsFileModalOpen}
+            setShowErrorModal={setShowErrorModal}
+            conversationHistory={conversationHistory}
+            mainConversationHistory={mainConversationHistory}
+            setMainConversationHistory={setMainConversationHistory}
+          />
+          <NotesSection
+            isNotesEnabled={isNotesEnabled}
+            setIsNotesEnabled={setIsNotesEnabled}
+            handleVideoToggle={handleVideoToggle}
+          />
+        </div>
 
-      <FileModal
-        isOpen={isFileModalOpen}
-        onClose={() => setIsFileModalOpen(false)}
-      />
+        {isNotesEnabled && (
+          <NotesOverlay
+            isVisible={isNotesEnabled}
+            setIsNotesEnabled={setIsNotesEnabled}
+            setIsFileModalOpen={setIsFileModalOpen}
+            handleVideoToggle={handleVideoToggle}
+            mainConversationHistory={mainConversationHistory}
+            conversationHistory={conversationHistory}
+            setConversationHistory={setConversationHistory}
+          />
+        )}
 
-      <ErrorModal
-        isOpen={showErrorModal}
-        onClose={() => setShowErrorModal(false)}
-        onConfirm={() => {
-          setShowErrorModal(false);
-        }}
-      />
-      
-      <CompletionModal
-        isOpen={showCompletionModal}
-        onClose={() => setShowCompletionModal(false)}
-        onConfirm={() => {
-          setShowCompletionModal(false);
-          setIsVideoPlaying(false);
-        }}
-      />
+        <FileModal
+          isOpen={isFileModalOpen}
+          onClose={() => setIsFileModalOpen(false)}
+        />
+
+        <ErrorModal
+          isOpen={showErrorModal}
+          onClose={() => setShowErrorModal(false)}
+          onConfirm={() => {
+            setShowErrorModal(false);
+          }}
+        />
+
+        <CompletionModal
+          isOpen={showCompletionModal}
+          onClose={() => setShowCompletionModal(false)}
+          onConfirm={() => {
+            setShowCompletionModal(false);
+            setIsVideoPlaying(false);
+          }}
+        />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Teaching
+export default Teaching;
