@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import StoreProvider from "@/src/store/StoreProvider";
 import "./globals.css";
-import SidebarTab from "../components/SideBar/SidebarTab";
-import HeaderTop from "../components/header/HeaderTop";
+import SideBarMain from "../components/SideBar/SideBarMain";
+
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,13 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <StoreProvider>
-          <div className="w-full flex">
-                <SidebarTab />
-                <div className="w-full flex  flex-col ">   
-                  <HeaderTop title="Dashboard" name="Kate Mott" />  
-                  <div className="h-[calc(100vh-68px)] w-[calc(100vw-75px)] text-white overflow-auto bg-bakground-gradient ">{children}</div>
-                </div>
-              </div>
+          <SideBarMain>{children}</SideBarMain>
         </StoreProvider>
       </body>
     </html>

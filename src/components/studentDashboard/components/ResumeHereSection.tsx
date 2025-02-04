@@ -58,7 +58,7 @@ export default function ResumeHereSection() {
           className="w-full flex justify-between text-xs gap-3"
           key={item.title}
         >
-          <div className="w-full max-w-[120px]">{item.title}</div>
+          <div className="w-full max-w-[120px] min-w-[70px]">{item.title}</div>
           <div className="w-full text-[var(--Content-Primary-static)]">
             {item.description}
           </div>
