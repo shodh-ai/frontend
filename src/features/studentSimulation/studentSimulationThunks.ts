@@ -3,7 +3,7 @@ import { SimulationResponse } from "@/src/models/studentSimulationModels/Simulat
 import { ErrorMessage } from "../../models/StudentModel";
 import { endPoints } from "@/src/services/apiUrls";
 import {
-    DecisionId,
+  DecisionId,
   DecisionResponse,
   SubmitSimulationRequest,
 } from "@/src/models/studentSimulationModels/SubmitSimulation";
@@ -14,7 +14,7 @@ import {
 const baseUrl = process.env.NEXT_PUBLIC_SHODH_BASE_URL;
 
 const { HANDLE_DECISION_SIMULATION, START_SIMULATION, SUBMIT_SIMULATION } =
-  endPoints.studentSimulation
+  endPoints.studentSimulation;
 
 export const startSimulationStudent = createAsyncThunk<
   SimulationResponse,
@@ -22,16 +22,13 @@ export const startSimulationStudent = createAsyncThunk<
   { rejectValue: ErrorMessage }
 >("studentSimulation/startSimulationStudent", async (_, thunkAPI) => {
   try {
-    const response = await fetch(
-      `${baseUrl}${START_SIMULATION}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
-    );
+    const response = await fetch(`${baseUrl}${START_SIMULATION}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+    });
 
     if (!response.ok) {
       const parsedResponse = await response.json();
@@ -55,17 +52,14 @@ export const submitSimulationStudent = createAsyncThunk<
   "studentSimulation/submitSimulationStudent",
   async (requestBody, thunkAPI) => {
     try {
-      const response = await fetch(
-        `${baseUrl}${SUBMIT_SIMULATION}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch(`${baseUrl}${SUBMIT_SIMULATION}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       if (!response.ok) {
         const parsedResponse = await response.json();
@@ -84,11 +78,11 @@ export const submitSimulationStudent = createAsyncThunk<
 
 export const handleSimulationDecision = createAsyncThunk<
   DecisioSimulationResponse,
-  { decision_id: string; requestBody: HandleDecisionSimulationRequest },
+  { decision_id: DecisionId; requestBody: HandleDecisionSimulationRequest },
   { rejectValue: ErrorMessage }
 >(
   "studentSimulation/handleSimulationDecision",
-  async ({decision_id, requestBody}, thunkAPI) => {
+  async ({ decision_id, requestBody }, thunkAPI) => {
     try {
       const response = await fetch(
         `${baseUrl}${HANDLE_DECISION_SIMULATION}/${decision_id}/action`,

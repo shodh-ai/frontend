@@ -1,9 +1,12 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { useSimulationModel } from "../../models/SimulationPage";
 import TaskBrief from "./TaskBrief";
 import TeamDiscuss from "./TeamDiscuss";
 import HistoryTab from "./HistoryTab";
+
+import { useAppDispatch } from "@/src/hooks/reduxHooks";
+import { startSimulationStudent } from "@/src/features/studentSimulation/studentSimulationThunks";
 
 export default function ProjectDiscussBox() {
   const {
@@ -11,6 +14,16 @@ export default function ProjectDiscussBox() {
     activeTab,
     handleSelectTab,
   } = useSimulationModel();
+
+  const dispatch = useAppDispatch();
+  
+
+  useEffect(() => {
+    dispatch(startSimulationStudent()).catch((err) => console.error("Error while fetching", err));
+  }, [dispatch]);
+
+  
+  
   return (
     <div className="border flex flex-col min-h-[664px] w-1/2 max-lg:w-full gap-4 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white">
       <div className="text-xs font-bold tracking-widest text-assessmentTextColor ">

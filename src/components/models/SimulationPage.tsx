@@ -42,13 +42,14 @@ export function useSimulationModel() {
       name: "Product Team Group",
       occupation: "",
       desc: "David: For now, I’ll prepare a milestone plans. Let me know if there’s anything else you need.",
-      icon: "/simulation/TeamProfile.svg",
+      icon: "/simulation/TeamProfile3.svg",
     },
   ];
 
   const SimulationCompButtons: CompletionSimulationButton[] = [
-    { label: "Approve", icon: "/simulation/ApproveIcon.svg" },
-    { label: "Revise Plan", icon: "/simulation/RevisePlan.svg" },
+    { label: "Accept all", icon: "/simulation/ApproveIcon.svg" },
+    { label: "Discuss Recommendation", icon: "/simulation/RevisePlan.svg" },
+    { label: "End Session", icon: "/simulation/RevisePlan.svg" },
   ];
   const TaskDiscussionDetails: TaskDiscussionTabs[] = [
     {

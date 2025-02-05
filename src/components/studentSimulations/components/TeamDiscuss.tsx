@@ -1,14 +1,59 @@
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSimulationModel } from "../../models/SimulationPage";
 import TeamChat from "./TeamChat";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/reduxHooks";
+import { RootState } from "@/src/store";
+import { State } from "@/src/models/studentSimulationModels/SubmitSimulation";
+import { submitSimulationStudent } from "@/src/features/studentSimulation/studentSimulationThunks";
 
 export default function TeamDiscuss() {
-  const [showchat, setShowChat] = useState<boolean>(false);
+  const [showchat, setShowChat] = useState<boolean>(true);
 
   const handlesChatDiscuss = () => {
     setShowChat(!showchat);
   };
+
+  
+  const [content , setContent] = useState<string>("");
+  const [value , setValue] = useState<string>("");
+
+  const handleChange= (e : string)=>{
+    setContent(e);
+  }
+
+  const handleSubmit =()=>{
+    setValue(content);
+    setContent("");
+  }
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmit();
+    }
+  };
+
+  const { SimulationStartData, status } = useAppSelector(
+    (state: RootState) => state.studentSimulation
+  );
+
+  const [state, setState] = useState<State | null>(null); 
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (status === "succeeded" && SimulationStartData?.state) {
+      setState(SimulationStartData?.state as State); 
+    }
+  }, [SimulationStartData, status]);
+
+  useEffect(() => {
+    if (state !== null && value !== "") {
+      console.log("111", state)
+      dispatch(submitSimulationStudent({ content:value, state }))
+        .catch((err) => console.error("Error submitting simulation", err));
+    }
+  }, [value, state, dispatch]);
+
 
   const { TemMembersDetails } = useSimulationModel();
   return (
@@ -17,7 +62,7 @@ export default function TeamDiscuss() {
 
       {showchat ? (
         <div className="flex flex-col justify-between h-full">
-          <TeamChat handlesChatDiscuss={handlesChatDiscuss} />
+          <TeamChat handlesChatDiscuss={handlesChatDiscuss} value = {value} />
           <div className="w-full flex  text-xs">
             <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] border-r-0 p-3 max-sm:p-1 flex items-center justify-between rounded-tl-md rounded-bl-md w-full">
               <div className="flex gap-3 w-full">
@@ -29,11 +74,14 @@ export default function TeamDiscuss() {
                 />
                 <input
                   placeholder="Ask me anything!"
-                  className="border-none focus:outline-none   bg-transparent w-full text-nowrap"
+                  className="border-none focus:outline-none   bg-transparent w-full text-nowrap" 
+                  onChange={(e)=>handleChange(e.target.value)}
                   type="text"
+                  value={content}
+                  onKeyDown={handleKeyDown}
                 />
               </div>
-              <Image src={"/SendIcon.svg"} alt="image" height={32} width={32} />
+              <Image src={"/SendIcon.svg"} className="cursor-pointer" alt="image" height={32} width={32}  onClick={handleSubmit} />
             </div>
             <div className="flex justify-around items-center p-3 max-sm:p-1 b w-full max-w-[119px] max-sm:max-w-[40px] bg-barBgColor rounded-tr-md rounded-br-md">
               <Image src={"/TalkIcon.svg"} alt="image" height={32} width={32} />
