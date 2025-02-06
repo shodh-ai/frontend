@@ -23,6 +23,7 @@ interface ControlBarProps {
   setMainConversationHistory: Function;
   conversationHistory: Message[];
   mainConversationHistory: Message[];
+  onSendMessage: (message: string) => Promise<void>;
 }
 
 const ControlBar = ({
@@ -37,49 +38,16 @@ const ControlBar = ({
   setMainConversationHistory,
   conversationHistory,
   mainConversationHistory,
+  onSendMessage,
 }: ControlBarProps) => {
 
 
   const dispatch = useAppDispatch();
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (transcript.trim() !== "") {
-      const userMessage: Message = {
-        role: "user",
-        content: transcript,
-      };
-
-      const newMainConversationHistory = [
-        ...mainConversationHistory,
-        userMessage,
-      ];
-      setMainConversationHistory(newMainConversationHistory);
-      const requestData: DoubtRequest = {
-        main_conversation_history: newMainConversationHistory,
-        conversation_history: conversationHistory,
-        current_message: transcript,
-      };
+      onSendMessage(transcript);
       setTranscript("");
-      try {
-        const result = await dispatch(submitDoubt(requestData)).unwrap();
-
-        const assistantReply: Message = {
-          role: "assistant",
-          content: result.assistant_reply,
-        };
-
-        const updatedMainConversationHistory = [
-          ...newMainConversationHistory,
-          assistantReply,
-        ];
-        localStorage.setItem(
-          "mainConversationHistory",
-          JSON.stringify(updatedMainConversationHistory)
-        );
-        setMainConversationHistory(updatedMainConversationHistory);
-      } catch (error) {
-        console.error("Error dispatching submitDoubt:", error);
-      }
     }
   };
 
