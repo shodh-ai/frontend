@@ -1,14 +1,17 @@
 import Image from "next/image";
-import React, { useState } from "react";
+import React from "react";
 import { useSimulationModel } from "../../models/SimulationPage";
 import TeamChat from "./TeamChat";
 
-export default function TeamDiscuss() {
-  const [showchat, setShowChat] = useState<boolean>(false);
+type Props = {
+  handleSelectTab : (tabIndex: number) =>void;
+  showchat:boolean;
+  handlesChatDiscuss:(value: boolean)=>void;
+}
 
-  const handlesChatDiscuss = () => {
-    setShowChat(!showchat);
-  };
+export default function TeamDiscuss({handleSelectTab, showchat, handlesChatDiscuss}:Props) {
+  
+
 
   const { TemMembersDetails } = useSimulationModel();
   return (
@@ -16,31 +19,7 @@ export default function TeamDiscuss() {
       <div className="text-xl font-bold">Team Discussion</div>
 
       {showchat ? (
-        <div className="flex flex-col justify-between h-full">
-          <TeamChat handlesChatDiscuss={handlesChatDiscuss} />
-          <div className="w-full flex  text-xs">
-            <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] border-r-0 p-3 flex items-center justify-between rounded-tl-md rounded-bl-md w-full">
-              <div className="flex gap-3 w-full">
-                <Image
-                  src={"/UploadFileIcon.svg"}
-                  alt="image"
-                  height={24}
-                  width={24}
-                />
-                <input
-                  placeholder="Ask me anything!"
-                  className="border-none focus:outline-none   bg-transparent w-full text-nowrap"
-                  type="text"
-                />
-              </div>
-              <Image src={"/SendIcon.svg"} alt="image" height={32} width={32} />
-            </div>
-            <div className="flex justify-around items-center p-3 b w-full max-w-[119px] bg-barBgColor rounded-tr-md rounded-br-md">
-              <Image src={"/TalkIcon.svg"} alt="image" height={32} width={32} />
-              <div>Talk to me</div>
-            </div>
-          </div>
-        </div>
+          <TeamChat handlesChatDiscuss={handlesChatDiscuss}  handleSelectTab={handleSelectTab}/>
       ) : (
         <>
           <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] p-3 gap-3 flex items-center justify-between rounded-md w-full">
@@ -55,7 +34,7 @@ export default function TeamDiscuss() {
           {TemMembersDetails.map((member, index) => (
             <div
               className="flex gap-2 w-full cursor-pointer"
-              onClick={handlesChatDiscuss}
+              onClick={()=>handlesChatDiscuss(true)}
               key={index}
             >
               <Image src={member.icon} alt="image" height={36} width={36} />
