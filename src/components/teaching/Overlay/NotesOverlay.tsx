@@ -152,19 +152,26 @@ const NotesOverlay: React.FC<NotesOverlayProps> = ({
             onClick={() => setIsFileModalOpen(true)}
           />
           <textarea
-            placeholder="Ask me anything!"
-            value={currentMessage}
-            className="bg-transparent flex-1 border-none outline-none resize-none overflow-y-auto
-                            [&::-webkit-scrollbar]:w-[4px]
-                            [&::-webkit-scrollbar-thumb]:bg-gray-400
-                            [&::-webkit-scrollbar-track]:bg-gray-800"
-            onChange={(e) => setCurrentMessage(e.target.value)}
-            style={{
-              height: "24px",
-              lineHeight: "24px",
-              maxHeight: "70px",
-            }}
-          />
+  placeholder="Ask me anything!"
+  value={currentMessage}
+  className="bg-transparent flex-1 border-none outline-none resize-none overflow-y-auto
+              [&::-webkit-scrollbar]:w-[4px]
+              [&::-webkit-scrollbar-thumb]:bg-gray-400
+              [&::-webkit-scrollbar-track]:bg-gray-800"
+  onChange={(e) => setCurrentMessage(e.target.value)}
+  style={{
+    height: "24px",
+    lineHeight: "24px",
+    maxHeight: "70px",
+  }}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); 
+      handleSend(); 
+    }
+  }}
+/>
+
           <button onClick={handleSend}>
             <MdSend size="1.5em" />
           </button>

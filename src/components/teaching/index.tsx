@@ -420,9 +420,6 @@ const Teaching = () => {
             setTranscript={setTranscript}
             setIsFileModalOpen={setIsFileModalOpen}
             setShowErrorModal={setShowErrorModal}
-            conversationHistory={conversationHistory}
-            mainConversationHistory={mainConversationHistory}
-            setMainConversationHistory={setMainConversationHistory}
             onSendMessage={handleSendMessage}
           />
           <NotesSection

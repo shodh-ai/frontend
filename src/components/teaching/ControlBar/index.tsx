@@ -7,8 +7,7 @@ import {
   MdPlayArrow,
   MdSend,
 } from "react-icons/md";
-import { submitDoubt } from "@/src/features/StudentDoubts/DoubtThunk";
-import { DoubtRequest, Message } from "@/src/models/DoubtModel";
+import { Message } from "@/src/models/DoubtModel";
 import { useAppDispatch } from "@/src/hooks/reduxHooks";
 
 interface ControlBarProps {
@@ -20,9 +19,6 @@ interface ControlBarProps {
   setTranscript: (value: string) => void;
   setIsFileModalOpen: (value: boolean) => void;
   setShowErrorModal: (value: boolean) => void;
-  setMainConversationHistory: Function;
-  conversationHistory: Message[];
-  mainConversationHistory: Message[];
   onSendMessage: (message: string) => Promise<void>;
 }
 
@@ -35,13 +31,9 @@ const ControlBar = ({
   setTranscript,
   setIsFileModalOpen,
   setShowErrorModal,
-  setMainConversationHistory,
-  conversationHistory,
-  mainConversationHistory,
+
   onSendMessage,
 }: ControlBarProps) => {
-
-
   const dispatch = useAppDispatch();
 
   const handleSend = () => {
@@ -66,12 +58,17 @@ const ControlBar = ({
                     [&::-webkit-scrollbar]:w-[4px]
                     [&::-webkit-scrollbar-thumb]:bg-gray-400
                     [&::-webkit-scrollbar-track]:bg-gray-800"
-     
           onChange={(e) => setTranscript(e.target.value)}
           style={{
             height: "24px",
             lineHeight: "24px",
             maxHeight: "70px",
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
           }}
         />
         {transcript && (
