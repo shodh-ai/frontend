@@ -34,12 +34,12 @@ export default function AnalyseMain() {
     { day: "Sat", current: 240, previous: 190 },
   ]
 
-  const metricsData = Array(10).fill(null).map((_, index) => ({
-    metric: `Metric ${index + 1}`,
-    value1: Math.floor(Math.random() * 100),
-    value2: Math.floor(Math.random() * 100),
-    value3: Math.floor(Math.random() * 100),
-  }))
+  // const metricsData = Array(10).fill(null).map((_, index) => ({
+  //   metric: `Metric ${index + 1}`,
+  //   value1: Math.floor(Math.random() * 100),
+  //   value2: Math.floor(Math.random() * 100),
+  //   value3: Math.floor(Math.random() * 100),
+  // }))
   
   const sliderRef = useRef<HTMLDivElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -155,7 +155,7 @@ export default function AnalyseMain() {
       )}
 
       {activeTab === 1 && (
-        <MetricsTab metricsData={metricsData} />
+        <MetricsTab  />
       )}
     </div>
   )

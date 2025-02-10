@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import StoreProvider from "@/src/store/StoreProvider";
 import "./globals.css";
 import SideBarMain from "../components/SideBar/SideBarMain";
+import GlobalToast from "../components/GlobalToast";
 
 
 const geistSans = localFont({
@@ -33,6 +34,7 @@ export default function RootLayout({
       >
         <StoreProvider>
           <SideBarMain>{children}</SideBarMain>
+          <GlobalToast/>
         </StoreProvider>
       </body>
     </html>
