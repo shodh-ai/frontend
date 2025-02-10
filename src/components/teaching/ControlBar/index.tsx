@@ -73,6 +73,12 @@ const ControlBar = ({
             lineHeight: "24px",
             maxHeight: "70px",
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault(); 
+              handleSend(); 
+            }
+          }}
         />
         {transcript && (
           <button onClick={handleSend} className=" ">
