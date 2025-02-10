@@ -4,8 +4,8 @@ export const endPoints = {
         GET_ALL_STUDENT_LEADERSHIP_SCORE : "student/get-leaderboard"
     },
     studentSimulation:{
-        HANDLE_DECISION_SIMULATION:"simulation/decisions",
+        HANDLE_DECISION_SIMULATION:"api/simulation/decisions/action",
         START_SIMULATION:"api/simulation/start",
-        SUBMIT_SIMULATION:"simulation/decisions/submit"
+        SUBMIT_SIMULATION:"api/simulation/decisions/submit"
     }
 }

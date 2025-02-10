@@ -3,13 +3,13 @@ import { SimulationResponse } from "@/src/models/studentSimulationModels/Simulat
 import { ErrorMessage } from "../../models/StudentModel";
 import { endPoints } from "@/src/services/apiUrls";
 import {
-  DecisionId,
   DecisionResponse,
   SubmitSimulationRequest,
 } from "@/src/models/studentSimulationModels/SubmitSimulation";
 import {
   DecisioSimulationResponse,
   HandleDecisionSimulationRequest,
+  HandleSpecificDecisionSimulationRequest,
 } from "@/src/models/studentSimulationModels/SimulationDecisionModel";
 const baseUrl = process.env.NEXT_PUBLIC_SHODH_BASE_URL;
 
@@ -78,23 +78,28 @@ export const submitSimulationStudent = createAsyncThunk<
 
 export const handleSimulationDecision = createAsyncThunk<
   DecisioSimulationResponse,
-  { decision_id: DecisionId; requestBody: HandleDecisionSimulationRequest },
+  HandleDecisionSimulationRequest | HandleSpecificDecisionSimulationRequest,
   { rejectValue: ErrorMessage }
 >(
   "studentSimulation/handleSimulationDecision",
-  async ({ decision_id, requestBody }, thunkAPI) => {
+  async (requestBody, thunkAPI) => {
     try {
-      const response = await fetch(
-        `${baseUrl}${HANDLE_DECISION_SIMULATION}/${decision_id}/action`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      let finalRequestBody: HandleDecisionSimulationRequest | HandleSpecificDecisionSimulationRequest;
+
+      if (requestBody.action === "discuss_specific") {
+        finalRequestBody = requestBody as HandleSpecificDecisionSimulationRequest;
+      } else {
+        finalRequestBody = requestBody;
+      }
+
+      const response = await fetch(`${baseUrl}${HANDLE_DECISION_SIMULATION}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify(finalRequestBody),
+      });
 
       if (!response.ok) {
         const parsedResponse = await response.json();

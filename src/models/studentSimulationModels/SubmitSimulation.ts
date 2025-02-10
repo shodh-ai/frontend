@@ -1,4 +1,5 @@
 export interface MetricChange {
+  name:string,
   change: number;
   reason: string;
 }
@@ -6,7 +7,7 @@ export interface MetricChange {
 export interface Discussion {
   agent: string;
   content: string;
-  metric_changes: Record<string, MetricChange>; // Dynamic keys for metrics
+  metric_changes:  MetricChange[]; // Dynamic keys for metrics
 }
 
 export interface CoreMetrics {

@@ -30,7 +30,7 @@ export interface Metrics {
   export interface DecisioSimulationResponse {
     status: string; 
     message: string;
-    updated_metrics: Metrics;
+    metric_changes: Metrics;
     next_challenge: Challenge;
     state: SimulationState;
   }
@@ -41,3 +41,9 @@ export interface Metrics {
     state: State;
   }
   
+  export interface HandleSpecificDecisionSimulationRequest{
+    action:string,
+    feedback:string,
+    specific_recommendations:string[],
+    state:State,
+  }

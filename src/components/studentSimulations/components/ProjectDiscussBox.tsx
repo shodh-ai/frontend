@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSimulationModel } from "../../models/SimulationPage";
 import TaskBrief from "./TaskBrief";
 import TeamDiscuss from "./TeamDiscuss";
@@ -11,18 +11,23 @@ import { startSimulationStudent } from "@/src/features/studentSimulation/student
 export default function ProjectDiscussBox() {
   const {
     SinulationProjectTabs,
-    activeTab,
-    handleSelectTab,
+    // activeTab,
+    // handleSelectTab,
   } = useSimulationModel();
 
   const dispatch = useAppDispatch();
   
+  const [activeTab, setActiveTab] = useState<number>(1);
+
+  const handleSelectTab = (tabIndex: number) => {
+    setActiveTab(tabIndex);
+  };
+
 
   useEffect(() => {
-    dispatch(startSimulationStudent()).catch((err) => console.error("Error while fetching", err));
+    dispatch(startSimulationStudent()).then().catch((err) => console.error("Error while fetching", err));
   }, [dispatch]);
 
-  
   
   return (
     <div className="border flex flex-col min-h-[664px] w-1/2 max-lg:w-full gap-4 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white">
@@ -46,7 +51,7 @@ export default function ProjectDiscussBox() {
           </div>
         ))}
       </div>
-     {activeTab === 0 ? <TaskBrief/> :  activeTab === 1 ? <TeamDiscuss/> : <HistoryTab/>}
+     {activeTab === 0 ? <TaskBrief/> :  activeTab === 1 ? <TeamDiscuss handleSelectTab={handleSelectTab}/> : <HistoryTab/>}
     </div>
   );
 }

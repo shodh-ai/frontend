@@ -11,7 +11,7 @@ export default function TaskBrief() {
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="text-xl font-semibold">Task Brief</div>
         <div className="text-sm text-[var(--Content-Primary-static)]">
-          Analysing data for Y1, Q3
+          Week {SimulationStartData && SimulationStartData?.state?.current_week}
         </div>
       </div>
 
@@ -24,7 +24,7 @@ export default function TaskBrief() {
             {SimulationStartData.challenge.situation}
           </div>
 
-          <div className="pt-2 text-sm font-semibold">Objective:</div>
+          <div className="pt-2 text-sm font-semibold">Objectives:</div>
           <div className="flex flex-col gap-2 text-sm text-[var(--Content-Primary-static)]">
             <div>{task.task_objective.obj_text}</div>
 
