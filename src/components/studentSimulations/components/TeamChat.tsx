@@ -10,9 +10,8 @@ import {
   submitSimulationStudent,
 } from "@/src/features/studentSimulation/studentSimulationThunks";
 import { setSubmitdataRespoonse } from "@/src/features/studentSimulation/studentSimulationSlice";
-import { toast } from "react-toastify";
 type Props = {
-  handlesChatDiscuss: () => void;
+  handlesChatDiscuss: (value: boolean) => void;
   handleSelectTab: (tabIndex: number) => void;
 };
 export default function TeamChat({
@@ -27,7 +26,6 @@ export default function TeamChat({
 
   const [content, setContent] = useState<string>("");
   const [value, setValue] = useState<string>("");
-  const [showDecision, setShowDecision] = useState<boolean>(false);
 
   const handleChange = (e: string) => {
     setContent(e);
@@ -48,7 +46,6 @@ export default function TeamChat({
     SimulationStartData,
     status,
     submitStatus,
-    SimulationDecisionResponse,
   } = useAppSelector((state: RootState) => state.studentSimulation);
 
   const [state, setState] = useState<State | null>(null);
@@ -68,21 +65,6 @@ export default function TeamChat({
     }
   }, [value, state, dispatch]);
 
-  useEffect(() => {
-    if (SimulationSubmitData && showDecision) {
-      dispatch(
-        handleSimulationDecision({
-          action: "discuss_specific",
-          feedback: value,
-          specific_recommendations: ["operational cost impact"],
-          state: SimulationSubmitData.state,
-        })
-      )
-        .then(()=>setShowDecision(false))
-        .catch((err) => console.error("Error while fetching", err));
-    }
-  }, [showDecision, value, SimulationSubmitData, dispatch]);
-
   const handleSinulationAction = (index: number) => {
     if (index === 0 && SimulationSubmitData) {
       dispatch(
@@ -95,8 +77,20 @@ export default function TeamChat({
         .catch((err) => console.error("Error while fetchibg", err));
       dispatch(setSubmitdataRespoonse());
     } else if (index === 1) {
-      dispatch(setSubmitdataRespoonse());
-      setShowDecision(true);
+      if (SimulationSubmitData) {
+        dispatch(
+          handleSimulationDecision({
+            action: "discuss_specific",
+            feedback: value,
+            specific_recommendations: ["operational cost impact"],
+            state: SimulationSubmitData.state,
+          })
+        )
+          .then(()=>setValue(""))
+          .catch((err) => console.error("Error while fetching", err));
+  
+          dispatch(setSubmitdataRespoonse());
+      }
     } else {
       if (SimulationSubmitData) {
         dispatch(
@@ -113,9 +107,6 @@ export default function TeamChat({
       }
     }
 
-    if (SimulationDecisionResponse) {
-      toast.info(SimulationDecisionResponse?.message);
-    }
   };
 
   return (
@@ -128,7 +119,7 @@ export default function TeamChat({
             width={24}
             height={24}
             className="cursor-pointer"
-            onClick={() => handlesChatDiscuss()}
+            onClick={() => handlesChatDiscuss(false)}
           />
           <div className="flex items-center gap-4 w-full cursor-pointer">
             <Image

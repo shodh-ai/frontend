@@ -72,7 +72,7 @@ const StudentSimulationSlice = createSlice({
           state.SimulationStartData.message = action.payload.message;
           state.SimulationStartData.challenge.department = action.payload.next_challenge.department;
           state.SimulationStartData.challenge.situation = action.payload.next_challenge.situation;
-          state.SimulationStartData.metrics = action.payload.metric_changes;
+          // state.SimulationStartData.metrics = action.payload.metric_changes;
           state.SimulationStartData.state.current_week = action.payload.state.current_week;
         }
       })

@@ -51,6 +51,13 @@ export function useSimulationModel() {
     { label: "Discuss Recommendation", icon: "/simulation/RevisePlan.svg" },
     { label: "End Session", icon: "/simulation/RevisePlan.svg" },
   ];
+
+
+  const TaskBrifButtons: CompletionSimulationButton[] = [
+    { label: "Chat with Team", icon: "/ChatIcon.svg" },
+    { label: "View Metrices", icon: "/simulation/ViewMetrices.svg" },
+    { label: "Exit Simulation", icon: "/simulation/ExitIcon.svg" },
+  ];
   const TaskDiscussionDetails: TaskDiscussionTabs[] = [
     {
       task_name: "Welcome to Marketing Simulation: Managing Segments",
@@ -95,6 +102,7 @@ export function useSimulationModel() {
     SimulationCompButtons,
     TemMembersDetails,
     TaskDiscussionDetails,
+    TaskBrifButtons,
     activeTab,
     handleSelectTab,
   };

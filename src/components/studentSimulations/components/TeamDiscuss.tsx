@@ -1,18 +1,16 @@
 import Image from "next/image";
-import React, {  useState } from "react";
+import React from "react";
 import { useSimulationModel } from "../../models/SimulationPage";
 import TeamChat from "./TeamChat";
 
 type Props = {
   handleSelectTab : (tabIndex: number) =>void;
+  showchat:boolean;
+  handlesChatDiscuss:(value: boolean)=>void;
 }
 
-export default function TeamDiscuss({handleSelectTab}:Props) {
-  const [showchat, setShowChat] = useState<boolean>(true);
-
-  const handlesChatDiscuss = () => {
-    setShowChat(!showchat);
-  };  
+export default function TeamDiscuss({handleSelectTab, showchat, handlesChatDiscuss}:Props) {
+  
 
 
   const { TemMembersDetails } = useSimulationModel();
@@ -36,7 +34,7 @@ export default function TeamDiscuss({handleSelectTab}:Props) {
           {TemMembersDetails.map((member, index) => (
             <div
               className="flex gap-2 w-full cursor-pointer"
-              onClick={handlesChatDiscuss}
+              onClick={()=>handlesChatDiscuss(true)}
               key={index}
             >
               <Image src={member.icon} alt="image" height={36} width={36} />

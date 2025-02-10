@@ -23,6 +23,11 @@ export default function ProjectDiscussBox() {
     setActiveTab(tabIndex);
   };
 
+  const [showchat, setShowChat] = useState<boolean>(true);
+  
+    const handlesChatDiscuss = (value: boolean) => {
+      setShowChat(value);
+    };  
 
   useEffect(() => {
     dispatch(startSimulationStudent()).then().catch((err) => console.error("Error while fetching", err));
@@ -51,7 +56,7 @@ export default function ProjectDiscussBox() {
           </div>
         ))}
       </div>
-     {activeTab === 0 ? <TaskBrief/> :  activeTab === 1 ? <TeamDiscuss handleSelectTab={handleSelectTab}/> : <HistoryTab/>}
+     {activeTab === 0 ? <TaskBrief  handlesChatDiscuss={handlesChatDiscuss} handleSelectTab={handleSelectTab} /> :  activeTab === 1 ? <TeamDiscuss showchat={showchat}  handlesChatDiscuss={handlesChatDiscuss}  handleSelectTab={handleSelectTab}/> : <HistoryTab/>}
     </div>
   );
 }
