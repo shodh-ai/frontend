@@ -7,5 +7,9 @@ export const endPoints = {
         HANDLE_DECISION_SIMULATION:"api/simulation/decisions/action",
         START_SIMULATION:"api/simulation/start",
         SUBMIT_SIMULATION:"api/simulation/decisions/submit"
+    },
+    doubts:{
+        HANDLE_STUDENTS_DOUBTS : "doubt",
+        ASK_DOUBT:"ask_doubt"
     }
 }
