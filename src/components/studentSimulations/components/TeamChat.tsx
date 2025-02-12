@@ -3,10 +3,11 @@ import React, { useEffect, useState } from "react";
 import { useSimulationModel } from "../../models/SimulationPage";
 import { useAppDispatch, useAppSelector } from "@/src/hooks/reduxHooks";
 import { RootState } from "@/src/store";
-import { State } from "@/src/models/studentSimulationModels/SubmitSimulation";
+import { State } from "@/src/models/studentSimulationModels/SimulationModel";
 import { useRouter } from "next/navigation";
 import {
   handleSimulationDecision,
+  handleSimulationDecisionSpecific,
   submitSimulationStudent,
 } from "@/src/features/studentSimulation/studentSimulationThunks";
 import { setSubmitdataRespoonse } from "@/src/features/studentSimulation/studentSimulationSlice";
@@ -34,6 +35,11 @@ export default function TeamChat({
   const handleSubmit = () => {
     setValue(content);
     setContent("");
+    if (state !== null && content !== "") {
+      dispatch(submitSimulationStudent({ content, state })).catch(
+        (err) => console.error("Error submitting simulation", err)
+      );
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -55,15 +61,19 @@ export default function TeamChat({
     if (status === "succeeded" && SimulationStartData?.state) {
       setState(SimulationStartData?.state as State);
     }
-  }, [SimulationStartData, status]);
 
-  useEffect(() => {
-    if (state !== null && value !== "") {
-      dispatch(submitSimulationStudent({ content: value, state })).catch(
-        (err) => console.error("Error submitting simulation", err)
-      );
+    if(submitStatus === "succeeded" && SimulationSubmitData?.state){
+      setState(SimulationSubmitData?.state as State);
     }
-  }, [value, state, dispatch]);
+  }, [SimulationStartData, SimulationSubmitData, submitStatus,status]);
+
+  // useEffect(() => {
+  //   if (state !== null && value !== "") {
+  //     dispatch(submitSimulationStudent({ content: value, state })).catch(
+  //       (err) => console.error("Error submitting simulation", err)
+  //     );
+  //   }
+  // }, [value, state, dispatch]);
 
   const handleSinulationAction = (index: number) => {
     if (index === 0 && SimulationSubmitData) {
@@ -79,10 +89,10 @@ export default function TeamChat({
     } else if (index === 1) {
       if (SimulationSubmitData) {
         dispatch(
-          handleSimulationDecision({
-            action: "discuss_specific",
-            feedback: value,
-            specific_recommendations: ["operational cost impact"],
+          handleSimulationDecisionSpecific({
+            action: "consider profit margins",
+            feedback: "profit margins",
+            specific_recommendations: ["profitability"],
             state: SimulationSubmitData.state,
           })
         )
@@ -180,7 +190,7 @@ export default function TeamChat({
               Kindly inform me if the execution plan works for you or you would
               prefer any changes.
             </div>
-            <div className="flex gap-2 max-sm:flex-wrap">
+            <div className="flex gap-2 flex-wrap">
               {SimulationCompButtons.map((button, index) => (
                 <button
                   className="w-full border hover:bg-[#566FE9] rounded-md max-w-[160px] gap-2 p-3 flex items-center border-[var(--Border-Secondary)]"

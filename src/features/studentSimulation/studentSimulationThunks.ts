@@ -13,7 +13,7 @@ import {
 } from "@/src/models/studentSimulationModels/SimulationDecisionModel";
 const baseUrl = process.env.NEXT_PUBLIC_SHODH_BASE_URL;
 
-const { HANDLE_DECISION_SIMULATION, START_SIMULATION, SUBMIT_SIMULATION } =
+const { HANDLE_DECISION_SIMULATION,HANDLE_DECISION_SPECIFIC, START_SIMULATION, SUBMIT_SIMULATION } =
   endPoints.studentSimulation;
 
 export const startSimulationStudent = createAsyncThunk<
@@ -99,6 +99,39 @@ export const handleSimulationDecision = createAsyncThunk<
           "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify(finalRequestBody),
+      });
+
+      if (!response.ok) {
+        const parsedResponse = await response.json();
+        return thunkAPI.rejectWithValue({ error: parsedResponse.message });
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: unknown) {
+      const errorMessage =
+        (error as Error).message || "An unexpected error occurred";
+      return thunkAPI.rejectWithValue({ error: errorMessage });
+    }
+  }
+);
+
+
+export const handleSimulationDecisionSpecific = createAsyncThunk<
+  DecisionResponse,
+   HandleSpecificDecisionSimulationRequest,
+  { rejectValue: ErrorMessage }
+>(
+  "studentSimulation/handleSimulationDecisionSpecific",
+  async (requestBody, thunkAPI) => {
+    try {
+      const response = await fetch(`${baseUrl}${HANDLE_DECISION_SPECIFIC}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {

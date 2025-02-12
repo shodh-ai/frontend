@@ -5,6 +5,7 @@ export const endPoints = {
     },
     studentSimulation:{
         HANDLE_DECISION_SIMULATION:"api/simulation/decisions/action",
+        HANDLE_DECISION_SPECIFIC:"api/simulation/decisions/discuss-specific",
         START_SIMULATION:"api/simulation/start",
         SUBMIT_SIMULATION:"api/simulation/decisions/submit"
     },

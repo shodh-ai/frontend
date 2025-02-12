@@ -1,3 +1,5 @@
+import { State } from "./SimulationModel";
+
 export interface MetricChange {
   name:string,
   change: number;
@@ -40,14 +42,14 @@ export interface Decision {
   discussion: Discussion[];
 }
 
-export interface State {
-  current_metrics: Metrics;
-  current_week: number;
-  current_department: string;
-  current_decision: Decision | null;
-  total_weeks: number;
-  is_running: boolean;
-}
+// export interface State {
+//   current_metrics: Metrics;
+//   current_week: number;
+//   current_department: string;
+//   current_decision: Decision | null;
+//   total_weeks: number;
+//   is_running: boolean;
+// }
 
 export interface DecisionResponse {
   message: string;
