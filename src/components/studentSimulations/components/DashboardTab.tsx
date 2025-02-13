@@ -68,7 +68,7 @@ const TimeRangeTabs: React.FC<{
         transform: `translateX(${tabLeft}px)`,
       });
     }
-  }, [selectedRange]);
+  }, [selectedRange, ranges]);
 
   return (
     <div className="relative bg-gray-900 rounded-lg p-1">

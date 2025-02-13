@@ -7,8 +7,8 @@ interface VisualAidProps {
   onNarrationComplete?: () => void;
   flowData?: string[];
   currentSubtask?: number;
-  conversationHistory?: any[];
-  onTeachingDataReceived?: (data: any) => void;
+  conversationHistory?: string[];
+  onTeachingDataReceived?: (data: string) => void;
   isVideoPlaying?: boolean;
 }
 

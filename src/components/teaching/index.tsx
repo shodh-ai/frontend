@@ -6,7 +6,6 @@ import NotesOverlay from "@/src/components/teaching/Overlay/NotesOverlay";
 import { FileModal, ErrorModal, CompletionModal } from "./Modal";
 import ControlBar from "./ControlBar";
 import ChatOverlay from "./Overlay/ChatOverlay";
-import VideoPlayer from "../VideoPlayer";
 import VisualAid from "./VisualAid";
 import { Message } from "@/src/models/DoubtModel";
 import { getFlowData, getTeachingData } from "@/src/services/flowApi";
@@ -342,10 +341,6 @@ const Teaching = () => {
   const handleVideoToggle = () => {
     setIsVideoPlaying(!isVideoPlaying);
     setSubtitles("");
-  };
-
-  const handleVideoEnd = () => {
-    setShowCompletionModal(true);
   };
 
   useEffect(() => {

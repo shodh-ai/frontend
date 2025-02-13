@@ -1,5 +1,5 @@
 export interface Message {
-  role: String;
+  role: string;
   content: string;
 }
 
