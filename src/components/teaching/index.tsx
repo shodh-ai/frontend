@@ -373,16 +373,19 @@ const Teaching = () => {
               }}
               flowData={flowData}
               currentSubtask={currentSubtask}
-              conversationHistory={mainConversationHistory}
+              conversationHistory={mainConversationHistory.map(msg => msg.content)}
               onTeachingDataReceived={(teachData) => {
                 if (teachData) {
                   console.log('Received next teaching data:', teachData);
+                  const parsedTeachData = typeof teachData === "string" ? JSON.parse(teachData) : teachData;
+
                   setMainConversationHistory(prev => [...prev, {
                     role: "assistant",
-                    content: teachData.assistant_reply
+                    content: parsedTeachData.assistant_reply
                   }]);
-                  setVisualAid(teachData.assistant_visual_aid);
-                  setCurrentSubtask(teachData.current_subtask);
+
+                  setVisualAid(parsedTeachData.assistant_visual_aid);
+                  setCurrentSubtask(parsedTeachData.current_subtask);
                   // Auto-play when new content arrives
                   setIsVideoPlaying(true);
                 }
