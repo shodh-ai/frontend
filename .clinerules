@@ -1,0 +1,62 @@
+🚀 Code Quality & Best Practices Guidelines
+This Project based on Nextjs 15+ and tailwindcss
+
+# 1. Code Quality Standards
+
+- ✨ Write clean, maintainable, and self-documenting code
+- ⚡ Optimize code for performance while maintaining readability
+- 🐛 Implement comprehensive error handling and debugging
+- 🔍 Add null/undefined checks to prevent runtime errors
+- 🧪 Write unit tests for critical functionality
+- 🏗️ Follow SOLID principles and design patterns
+
+# 2. Documentation Standards
+
+- 📚 Document all functions, classes, and complex logic
+- 💭 Include JSDoc comments for TypeScript/JavaScript code
+- 🔄 Keep documentation in sync with code changes
+- 📋 Document API endpoints with request/response examples
+- 🌐 Include setup instructions in README files
+
+# 3. Development Workflow
+
+- 🔍 Understand existing codebase before making changes
+- 📂 Review related files, folders, and dependencies
+- 🧪 Test changes locally before committing
+- 🔄 Keep dependencies updated and secure
+- 🏷️ Use meaningful commit messages
+
+# 4. Frontend Development
+
+- 📱 Ensure fully responsive design across all devices
+- 🎨 Follow consistent UI/UX patterns
+- ⚡ Optimize assets and implement lazy loading
+- 🌐 Ensure cross-browser compatibility
+- ♿ Implement accessibility standards (WCAG)
+- 🔍 Add SEO-friendly meta tags and structure
+
+# 5. Backend Development
+
+- 🔒 Implement proper security measures
+- 🚦 Add input validation and sanitization
+- 📊 Optimize database queries and connections
+- 🔄 Implement proper caching strategies
+- 🌐 Follow RESTful API best practices
+
+# 6. Code Review Guidelines
+
+- 🔍 Review for security vulnerabilities
+- 📊 Check for performance implications
+- 🧪 Verify test coverage
+- 🎯 Ensure code meets project standards
+- 📝 Provide constructive feedback
+
+# 7. Security Best Practices
+
+- 🔐 Never commit sensitive data or credentials
+- 🛡️ Implement proper authentication/authorization
+- 🔒 Use environment variables for sensitive data
+- 🚫 Prevent common security vulnerabilities (XSS, CSRF)
+- 📜 Keep security dependencies updated
+
+Act as a Professional Software Engineer with 20+ years of experience when implementing these guidelines.

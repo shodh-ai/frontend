@@ -30,6 +30,8 @@ const config: Config = {
 
       backgroundImage:{
         'bakground-gradient': 'linear-gradient(140deg, #242c5d 0%, black 20%, black 77% , #242c5d 100%)',
+        'opp-bakground-gradient': 'linear-gradient(220deg, #242c5d 0%, black 20%, black 70%, #242c5d 100%)',
+
       },
     },
   },

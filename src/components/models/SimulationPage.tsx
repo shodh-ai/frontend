@@ -15,9 +15,9 @@ export function useSimulationModel() {
   const SimulationAnalysisTabs: ProjectDiscussionTabs[] = [
     { label: "Dashboard" },
     { label: "Metrics" },
-    { label: "Customer Purchase" },
-    { label: "Sales" },
-    { label: "Financial" },
+  //   { label: "Customer Purchase" },
+  //   { label: "Sales" },
+  //   { label: "Financial" },
   ];
   const TemMembersDetails: TeamMembersTab[] = [
     {
@@ -42,13 +42,21 @@ export function useSimulationModel() {
       name: "Product Team Group",
       occupation: "",
       desc: "David: For now, I’ll prepare a milestone plans. Let me know if there’s anything else you need.",
-      icon: "/simulation/TeamProfile.svg",
+      icon: "/simulation/TeamProfile3.svg",
     },
   ];
 
   const SimulationCompButtons: CompletionSimulationButton[] = [
-    { label: "Approve", icon: "/simulation/ApproveIcon.svg" },
-    { label: "Revise Plan", icon: "/simulation/RevisePlan.svg" },
+    { label: "Accept all", icon: "/simulation/ApproveIcon.svg" },
+    { label: "Discuss Recommendation", icon: "/simulation/RevisePlan.svg" },
+    { label: "End Session", icon: "/simulation/RevisePlan.svg" },
+  ];
+
+
+  const TaskBrifButtons: CompletionSimulationButton[] = [
+    { label: "Chat with Team", icon: "/ChatIcon.svg" },
+    { label: "View Metrices", icon: "/simulation/ViewMetrices.svg" },
+    { label: "Exit Simulation", icon: "/simulation/ExitIcon.svg" },
   ];
   const TaskDiscussionDetails: TaskDiscussionTabs[] = [
     {
@@ -82,7 +90,7 @@ export function useSimulationModel() {
       },
     },
   ];
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<number>(1);
 
   const handleSelectTab = (tabIndex: number) => {
     setActiveTab(tabIndex);
@@ -94,6 +102,7 @@ export function useSimulationModel() {
     SimulationCompButtons,
     TemMembersDetails,
     TaskDiscussionDetails,
+    TaskBrifButtons,
     activeTab,
     handleSelectTab,
   };
