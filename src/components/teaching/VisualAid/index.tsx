@@ -7,8 +7,8 @@ interface VisualAidProps {
   onNarrationComplete?: () => void;
   flowData?: string[];
   currentSubtask?: number;
-  conversationHistory?: any[];
-  onTeachingDataReceived?: (data: any) => void;
+  conversationHistory?: string[];
+  onTeachingDataReceived?: (data: string) => void;
   isVideoPlaying?: boolean;
 }
 
@@ -29,6 +29,9 @@ const VisualAid: React.FC<VisualAidProps> = ({
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const subtitleLinesRef = useRef<string[]>([]);
   const currentLineIndexRef = useRef(0);
+  const formattedConversationHistory = conversationHistory.map(entry =>
+    typeof entry === "string" ? { role: "user", content: entry } : entry
+  );
 
   // Break text into natural sentences for subtitles
   const prepareSubtitles = (text: string) => {
@@ -99,7 +102,7 @@ const VisualAid: React.FC<VisualAidProps> = ({
           const nextTeachData = await getTeachingData(
             flowData,
             currentSubtask + 1,
-            conversationHistory
+            formattedConversationHistory
           );
           
           if (nextTeachData) {

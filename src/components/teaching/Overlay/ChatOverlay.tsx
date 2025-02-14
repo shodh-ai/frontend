@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import data from "@/src/components/teaching/data.json";
 import { Message } from "@/src/models/DoubtModel";
 import { useAppSelector } from "@/src/hooks/reduxHooks";
 import Skeleton from "@mui/material/Skeleton";
@@ -10,7 +9,7 @@ interface ChatOverlayProps {
   onClose: () => void;
   conversationHistory: Message[];
   mainConversationHistory: Message[];
-  setMainConversationHistory: Function;
+  setMainConversationHistory: (history: Message[]) => void;
   onSendMessage: (message: string) => Promise<void>;
 }
 

@@ -34,8 +34,11 @@ export const submitDoubt = createAsyncThunk<
     const data: DoubtResponse = await response.json();
 
     return data;
-  } catch (error: any) {
-    return rejectWithValue(error.message || "Failed to submit doubt");
+  } catch (error){
+    if (error instanceof Error) {
+      return rejectWithValue(error.message || "Failed to submit doubt");
+    }
+    return rejectWithValue("Failed to submit doubt due to an unknown error");
   }
 });
 
@@ -60,7 +63,10 @@ export const askDoubt = createAsyncThunk<
 
     const data: AskDoubtResponse = await response.json();
     return data;
-  } catch (error: any) {
-    return rejectWithValue(error.message || "Failed to ask doubt");
+  } catch (error) {
+    if (error instanceof Error) {
+      return rejectWithValue(error.message || "Failed to ask doubt");
+    }
+    return rejectWithValue("Failed to ask doubt due to an unknown error");
   }
 });

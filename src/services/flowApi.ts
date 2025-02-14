@@ -75,10 +75,10 @@ export const getFlowData = async () => {
   }
 };
 
-let lastTeachRequest: { promise: Promise<any>; timestamp: number } | null = null;
+let lastTeachRequest: { promise: Promise<unknown>; timestamp: number } | null = null;
 const DEBOUNCE_TIME = 500; // ms
 
-export const getTeachingData = async (flow: string[], currentSubtask: number = 0, conversation_history: any[] = []) => {
+export const getTeachingData = async (flow: string[], currentSubtask: number = 0, conversation_history: Array<{ role: string; content: string }> = []) => {
   try {
     // Debounce requests
     const now = Date.now();

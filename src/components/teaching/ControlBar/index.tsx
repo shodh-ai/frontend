@@ -7,9 +7,8 @@ import {
   MdPlayArrow,
   MdSend,
 } from "react-icons/md";
-import { submitDoubt } from "@/src/features/StudentDoubts/DoubtThunk";
-import { DoubtRequest, Message } from "@/src/models/DoubtModel";
-import { useAppDispatch } from "@/src/hooks/reduxHooks";
+
+import { Message } from "@/src/models/DoubtModel";
 
 interface ControlBarProps {
   isVideoPlaying: boolean;
@@ -20,7 +19,7 @@ interface ControlBarProps {
   setTranscript: (value: string) => void;
   setIsFileModalOpen: (value: boolean) => void;
   setShowErrorModal: (value: boolean) => void;
-  setMainConversationHistory: Function;
+  setMainConversationHistory: (history: Message[]) => void;
   conversationHistory: Message[];
   mainConversationHistory: Message[];
   onSendMessage: (message: string) => Promise<void>;
@@ -35,14 +34,9 @@ const ControlBar = ({
   setTranscript,
   setIsFileModalOpen,
   setShowErrorModal,
-  setMainConversationHistory,
-  conversationHistory,
-  mainConversationHistory,
   onSendMessage,
 }: ControlBarProps) => {
 
-
-  const dispatch = useAppDispatch();
 
   const handleSend = () => {
     if (transcript.trim() !== "") {
