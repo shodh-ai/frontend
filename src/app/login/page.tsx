@@ -1,4 +1,3 @@
-"use client";
 import Login from "@/src/components/login/Login";
 import React from "react";
 

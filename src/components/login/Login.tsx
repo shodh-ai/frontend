@@ -10,7 +10,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#000000] p-4 sm:p-6 md:p-8">
+    <div className="h-full flex items-center justify-center bg-[#000000] p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-[1080px] bg-gradient-to-br from-[#020617]/10 to-[#0f172a]/10 backdrop-blur-md rounded-[20px] overflow-hidden flex flex-col lg:flex-row">
         <div className="hidden lg:block w-1/2 relative">
           <Image
@@ -25,16 +25,16 @@ export default function LoginPage() {
 
         <div className="w-full lg:w-1/2 p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col justify-center bg-opp-bakground-gradient">
           <div className="mb-6 sm:mb-8 md:mb-10 lg:mb-12">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex justify-center items-center gap-3 mb-2">
               <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
                 <Image src="/ShodhLogo.svg" alt="Shodh AI Logo" width={32} height={32} />
               </div>
               <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-white">Shodh AI</h1>
             </div>
-            <p className="text-[#94A3B8] text-xs sm:text-sm md:text-base">AI-Powered Insights for Smarter Learning.</p>
+            <p className="text-[#94A3B8] text-center text-xs sm:text-sm md:text-base">AI-Powered Insights for Smarter Learning.</p>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6 sm:mb-8 md:mb-10">
+          <h2 className="text-2xl text-center sm:text-3xl md:text-4xl font-bold text-white mb-6 sm:mb-8 md:mb-10">
             Let&apos;s Get Started!
           </h2>
 
