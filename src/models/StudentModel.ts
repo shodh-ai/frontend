@@ -1,7 +1,7 @@
 
 
 export interface GetStudentDashboardParams {
-    student_id: number; 
+    student_id: number | undefined; 
   }
   
   

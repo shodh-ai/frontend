@@ -7,6 +7,7 @@ export function useSidebarViewModel() {
     { label: 'Education', icon: '/dashboardEducation' },
     { label: 'Notes', icon: '/dashboardNotesIcon' },
     { label: 'Reference', icon: '/dashboardReferenceIcon' },
+    { label: 'Simulation', icon: '/QuestionIcon' },
 
   ];
 
@@ -19,17 +20,14 @@ export function useSidebarViewModel() {
   const sideBarExpandTabs: TabModel[] = [
     { label: 'Dashboard', icon: '/dashboardStack' },
     { label: 'Course Map', icon: '/dashboardEducation' },
-    { label: 'Doubts', icon: '/dashboardNotesIcon' },
-    { label: 'Reference Material', icon: '/dashboardReferenceIcon' },
+    { label: 'Course Assignments', icon: '/dashboardNotesIcon' },
+    { label: 'Assignments Score', icon: '/dashboardReferenceIcon' },
+    { label: 'Simulation', icon: '/QuestionIcon' },
 
   ];
 
 
-  const [activeTab, setActiveTab] = useState<number>(0);
+  
 
-  const handleSelectTab = (tabIndex: number) => {
-    setActiveTab(tabIndex);
-  };
-
-  return { tabs,sideBarExpandTabs,headerTabs,  activeTab, handleSelectTab };
+  return { tabs,sideBarExpandTabs,headerTabs };
 }

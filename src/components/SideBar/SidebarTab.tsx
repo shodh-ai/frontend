@@ -4,9 +4,11 @@ import Image from "next/image";
 import { useSidebarViewModel } from "../models/SideBarTabModel";
 interface Props {
   handleSideBarTab: ()=>void,
+  activeTab:number;
+  handleSelectTab:(index:number)=>void;
 }
-export default function SidebarTab({handleSideBarTab} : Props){
-  const { tabs, activeTab, handleSelectTab } = useSidebarViewModel();
+export default function SidebarTab({handleSideBarTab, activeTab, handleSelectTab} : Props){
+  const { tabs } = useSidebarViewModel();
 
   
   return (
