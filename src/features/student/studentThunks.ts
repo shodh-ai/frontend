@@ -2,10 +2,13 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { endPoints } from "../../services/apiUrls";
 import { SemesterScore , GetStudentDashboardParams, ErrorMessage} from "../../models/StudentModel"; 
 import { LeaderShipScoreAll } from "@/src/models/LeadershipModel";
+import Cookies from "js-cookie";
 
-const baseUrl = process.env.NEXT_PUBLIC_SHODH_BASE_URL;
+const baseUrl = process.env.NEXT_PUBLIC_SHODH_BACKEND_URL;
 
 const { GET_STUDENT_DASHBOARD , GET_ALL_STUDENT_LEADERSHIP_SCORE } = endPoints.student;
+
+const token  = JSON.parse(Cookies.get("token") ?? "{}");
 
 export const getStudentDashboard = createAsyncThunk<
 SemesterScore[], 
@@ -18,6 +21,7 @@ SemesterScore[],
       const response = await fetch(`${baseUrl}${GET_STUDENT_DASHBOARD}/${student_id}`, {
         method: "GET",
         headers: {
+          "Authorization":`Bearer ${token}`,
           "Content-Type":"application/json",
           "ngrok-skip-browser-warning": "true",
         },
@@ -46,9 +50,11 @@ void,
   "student/getStudentAllLeadershipScore",
   async (_, thunkAPI) => {
     try {
+      // const token  = JSON.parse(Cookies.get("token") ?? "{}");
       const response = await fetch(`${baseUrl}${GET_ALL_STUDENT_LEADERSHIP_SCORE}`, {
         method: "GET",
         headers: {
+          "Authorization":`Bearer ${token}`,
           "Content-Type":"application/json",
           "ngrok-skip-browser-warning": "true",
         },
