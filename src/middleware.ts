@@ -14,5 +14,5 @@ export function middleware(req: NextRequest) {
 
 // Apply middleware to all routes except static assets
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/student/simulation/:path*","/student/assessment/:path*, /student/assignment-score/:path*,  /student/teaching "],
 };

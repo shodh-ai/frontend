@@ -29,7 +29,7 @@ export default function LoginPage() {
       <div className="w-full max-w-[1080px] bg-gradient-to-br from-[#020617]/10 to-[#0f172a]/10 backdrop-blur-md rounded-[20px] overflow-hidden flex flex-col lg:flex-row">
         <div className="hidden lg:block w-1/2 relative">
           <Image
-            src="/loginImg.jpg"
+            src={"/loginImg.jpg"}
             alt="Geometric Pattern"
             fill
             sizes=""
