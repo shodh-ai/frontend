@@ -8,7 +8,7 @@ const baseUrl = process.env.NEXT_PUBLIC_SHODH_BACKEND_URL;
 
 const { GET_STUDENT_DASHBOARD , GET_ALL_STUDENT_LEADERSHIP_SCORE } = endPoints.student;
 
-const token  = JSON.parse(Cookies.get("token") ?? "{}");
+
 
 export const getStudentDashboard = createAsyncThunk<
 SemesterScore[], 
@@ -18,6 +18,7 @@ SemesterScore[],
   "student/getStudentDashboard",
   async ({ student_id }: GetStudentDashboardParams, thunkAPI) => {
     try {
+      const token  = JSON.parse(Cookies.get("token") ?? "{}");
       const response = await fetch(`${baseUrl}${GET_STUDENT_DASHBOARD}/${student_id}`, {
         method: "GET",
         headers: {
@@ -50,7 +51,7 @@ void,
   "student/getStudentAllLeadershipScore",
   async (_, thunkAPI) => {
     try {
-      // const token  = JSON.parse(Cookies.get("token") ?? "{}");
+      const token  = JSON.parse(Cookies.get("token") ?? "{}");
       const response = await fetch(`${baseUrl}${GET_ALL_STUDENT_LEADERSHIP_SCORE}`, {
         method: "GET",
         headers: {

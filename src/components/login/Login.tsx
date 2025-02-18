@@ -11,12 +11,18 @@ export default function LoginPage() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [invalidPass, setInvalidPass] = useState<boolean>(false);
+  const [fields, setFields] = useState<boolean>(false);
 
   const dispatch = useAppDispatch();
 
   const router = useRouter();
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  console.log("sagar", username,password)
+  const handleSubmit = () => {
+    if(username === "" || password === ""){
+      setFields(true);
+      setInvalidPass(false);
+      return ;
+    }
     dispatch(
       loginwithPassword({ username: username, password: password, role: 3 })
     ).unwrap()
@@ -24,6 +30,11 @@ export default function LoginPage() {
       .catch((err) => {console.error("Error while logging ", err); setInvalidPass(true)});
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && username && password) {
+        handleSubmit();
+      }
+    };
   return (
     <div className=" h-[100vh] flex items-center justify-center bg-[#000000] p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-[1080px] bg-gradient-to-br from-[#020617]/10 to-[#0f172a]/10 backdrop-blur-md rounded-[20px] overflow-hidden flex flex-col lg:flex-row">
@@ -62,38 +73,43 @@ export default function LoginPage() {
           <h2 className="text-2xl text-center sm:text-3xl md:text-4xl font-bold text-white mb-6 sm:mb-8 md:mb-10">
             Let&apos;s Get Started!
           </h2>
-
+{/* 
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit} */}
+            <div
             className="space-y-4 sm:space-y-5 md:space-y-6"
           >
             <div>
               <input
                 type="email"
                 placeholder="Email"
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 bg-[#1e293b]/50 rounded-lg text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#6366F1] transition-all duration-200 text-sm sm:text-base"
+                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 bg-[#1e293b]/50 rounded-lg text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#6366F1] ${invalidPass || fields ? "border border-red-500" : ""} transition-all duration-200 text-sm sm:text-base `}
                 aria-label="Email"
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {setUsername(e.target.value);setFields(false);setInvalidPass(false)}}
+                
               />
             </div>
             <div>
               <input
                 type="password"
                 placeholder="Password"
-                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 bg-[#1e293b]/50 rounded-lg text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#6366F1] ${invalidPass ? "border border-red-500" : ""} transition-all duration-200 text-sm sm:text-base`}
+                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 bg-[#1e293b]/50 rounded-lg text-white placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#6366F1] ${invalidPass || fields ? "border border-red-500" : ""} transition-all duration-200 text-sm sm:text-base`}
                 aria-label="Password"
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {setPassword(e.target.value);setFields(false);setInvalidPass(false)}}
+                onKeyDown={handleKeyDown}
               />
             </div>
 
-            {invalidPass &&  <div className="text-red-600  text-center text-base font-semibold">Invalid Password</div>}
+            {invalidPass &&  <div className="text-red-600  text-center text-base font-semibold">Invalid Email and Password</div>}
+            {fields && <div className="text-red-600  text-center text-base font-semibold">Please Enter both fields</div>}
             <button
               type="submit"
               className="w-full py-2.5 sm:py-3 md:py-3.5 mt-2 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E3] hover:to-[#7C4FE8] text-white rounded-lg transition-all duration-200 font-medium text-sm sm:text-base"
+              onClick={handleSubmit}
             >
               Login
             </button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
