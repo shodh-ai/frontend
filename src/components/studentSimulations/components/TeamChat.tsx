@@ -113,7 +113,7 @@ export default function TeamChat({
           .catch((err) => console.error("Error while fetchibg", err));
 
         dispatch(setSubmitdataRespoonse());
-        router.push("/student/dashboard/1");
+        router.push("/");
       }
     }
 

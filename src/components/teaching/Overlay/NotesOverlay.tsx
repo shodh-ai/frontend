@@ -7,10 +7,12 @@ import { useAppDispatch, useAppSelector } from "@/src/hooks/reduxHooks";
 import Skeleton from "@mui/material/Skeleton";
 
 import Box from "@mui/material/Box";
+import Image from "next/image";
 interface NotesOverlayProps {
-  isVisible: boolean;
-  setIsNotesEnabled: (value: boolean) => void;
+  // isVisible: boolean;
+  // setIsNotesEnabled: (value: boolean) => void;
   handleVideoToggle: () => void;
+  setActiveSideTab: (index: number) => void;
   setIsFileModalOpen: (value: boolean) => void;
   mainConversationHistory: Message[];
   conversationHistory: Message[];
@@ -18,12 +20,13 @@ interface NotesOverlayProps {
 }
 
 const NotesOverlay: React.FC<NotesOverlayProps> = ({
-  isVisible,
-  setIsNotesEnabled,
+  // isVisible,
+  // setIsNotesEnabled,
   setIsFileModalOpen,
   mainConversationHistory,
   conversationHistory,
   setConversationHistory,
+  setActiveSideTab,
 }) => {
   const [currentMessage, setCurrentMessage] = useState("");
 
@@ -33,9 +36,10 @@ const NotesOverlay: React.FC<NotesOverlayProps> = ({
     (state) => state.StudentDoubt.submitDoubt.loading
   );
 
-  const setToggle = () => {
-    setIsNotesEnabled(!isVisible);
-  };
+  // const setToggle = () => {
+  //   // setIsNotesEnabled(!isVisible);
+  //   setActiveSideTab(0);
+  // };
 
   const conversationContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -84,100 +88,111 @@ const NotesOverlay: React.FC<NotesOverlayProps> = ({
     }
   };
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className={`w-full absolute inset-0 rounded-xl bg-black/80 backdrop-blur-sm z-30 flex justify-end ${
-        isVisible ? "visible" : "hidden"
-      }`}
-    >
-      <div className="w-[50%] border-2 border-zinc-600 h-full rounded-xl shadow-lg flex flex-col">
-        <div className="px-6 py-3 flex justify-between">
-          <p>Doubts</p>
-          <MdClose
-            size="1.5em"
-            onClick={setToggle}
-            className="cursor-pointer"
-          />
+    // <motion.div
+    //   initial={{ opacity: 0 }}
+    //   animate={{ opacity: 1 }}
+    //   exit={{ opacity: 0 }}
+    //   className={`w-full absolute inset-0 rounded-xl bg-black/80 backdrop-blur-sm z-30 flex justify-end ${
+    //     isVisible ? "visible" : "hidden"
+    //   }`}
+    // >
+    // {/* <div className="w-[50%] border-2 border-zinc-600 h-full rounded-xl shadow-lg flex flex-col"> */}
+    <div className="h-full flex flex-col">
+      <div className=" flex justify-between">
+        <div className="text-xs font-bold text-assessmentTextColor tracking-widest">
+          DOUBTS
         </div>
-        <div
-          ref={conversationContainerRef}
-          className="h-full overflow-y-auto p-4"
-        >
-          <div className="space-y-4">
-            <>
-              {conversationHistory.map((message, index) => (
+        <Image
+          src={"/CrossIcon.svg"}
+          alt="cross image"
+          height={16}
+          width={16}
+          className="cursor-pointer"
+          onClick={() => setActiveSideTab(-1)}
+        />
+      </div>
+      <div ref={conversationContainerRef} className="h-full pt-3 overflow-y-auto ">
+        <div className="space-y-4">
+          <>
+            {conversationHistory.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
                 <div
-                  key={index}
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
+                  className={`max-w-[70%] rounded-lg px-3 py-1 ${
+                    message.role === "user"
+                      ? "bg-zinc-800 text-white"
+                      : "text-white"
                   }`}
                 >
-                  <div
-                    className={`max-w-[70%] rounded-lg px-3 py-1 ${
-                      message.role === "user"
-                        ? "bg-zinc-800 text-white"
-                        : "text-white"
-                    }`}
-                  >
-                    <div>{message.content}</div>
-                  </div>
+                  <div>{message.content}</div>
                 </div>
-              ))}
-              {submitDoubtLoading && (
-                <div
-                  className={`flex
+              </div>
+            ))}
+            {submitDoubtLoading && (
+              <div
+                className={`flex
                  "justify-start"
                 }`}
-                >
-                  <Skeleton
-                    variant="rectangular"
-                    width={"50%"}
-                    height={80}
-                    style={{
-                      background: "#e5e7eb3b",
-                      borderRadius: "10px",
-                    }}
-                  />
-                </div>
-              )}
-            </>
-          </div>
+              >
+                <Skeleton
+                  variant="rectangular"
+                  width={"50%"}
+                  height={80}
+                  style={{
+                    background: "#e5e7eb3b",
+                    borderRadius: "10px",
+                  }}
+                />
+              </div>
+            )}
+          </>
         </div>
-        <div className="flex bg-zinc-900 rounded p-2 m-2 gap-5 flex-1 items-end relative">
-          <MdUploadFile
-            size="1.5em"
-            className="cursor-pointer hover:text-gray-600"
-            onClick={() => setIsFileModalOpen(true)}
-          />
-       <textarea
-  placeholder="Ask me anything!"
-  value={currentMessage}
-  className="bg-transparent flex-1 border-none outline-none resize-none overflow-y-auto
+      </div>
+      <div className="flex bg-zinc-900 rounded p-2  gap-5 flex-1 justify-center items-center relative">
+        <MdUploadFile
+          size="1.5em"
+          className="cursor-pointer hover:text-gray-600"
+          onClick={() => setIsFileModalOpen(true)}
+        />
+        <textarea
+          placeholder="Ask me anything!"
+          value={currentMessage}
+          className="bg-transparent flex-1 border-none outline-none resize-none overflow-y-auto
               [&::-webkit-scrollbar]:w-[4px]
               [&::-webkit-scrollbar-thumb]:bg-gray-400
               [&::-webkit-scrollbar-track]:bg-gray-800"
-  onChange={(e) => setCurrentMessage(e.target.value)}
-  style={{
-    height: "24px",
-    lineHeight: "24px",
-    maxHeight: "70px",
-  }}
-  onKeyDown={(e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault(); 
-      handleSend(); 
-    }
-  }}
-/>
+          onChange={(e) => setCurrentMessage(e.target.value)}
+          style={{
+            height: "20px",
+            lineHeight: "20px",
+            maxHeight: "70px",
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+        />
 
-          <button onClick={handleSend}>
+        {/* <button onClick={handleSend}>
             <MdSend size="1.5em" />
-          </button>
-        </div>
+          </button> */}
+        <Image
+          src={"/SendIcon.svg"}
+          className="cursor-pointer"
+          alt="image"
+          height={32}
+          width={32}
+          onClick={handleSend}
+        />
       </div>
-    </motion.div>
+    </div>
+    // </motion.div>
   );
 };
 

@@ -29,22 +29,24 @@ export default function SemesterScore({ title = "Semester Score" }) {
                 <div className="flex gap-3 items-center">
                   <div className="text-2xl max-md:text-base">
                     {item.value}
-                    {index === SemesterScore.length - 1
+                    {SemesterScoreData && index === SemesterScoreData.length - 1
                       ? title === "Topic Score"
                         ? "Minutes"
                         : "Hrs"
                       : "%"}
                   </div>
-                  {item.improved_flag != null &&<Image
-                    src={`${
-                      item.improved_flag
-                        ? "/dashboard/CircleArrowUp.svg"
-                        : "/dashboard/CircleDownArrow.svg"
-                    }`}
-                    alt="image"
-                    width={24}
-                    height={24}
-                  />}
+                  {item.improved_flag != null && (
+                    <Image
+                      src={`${
+                        item.improved_flag
+                          ? "/dashboard/CircleArrowUp.svg"
+                          : "/dashboard/CircleDownArrow.svg"
+                      }`}
+                      alt="image"
+                      width={24}
+                      height={24}
+                    />
+                  )}
                 </div>
                 <div className="text-xs">
                   {item.improved_flag === true

@@ -5,9 +5,11 @@ import { useSidebarViewModel } from "../models/SideBarTabModel";
 
 interface Props {
   handleSideBarTab: () => void;
+  activeTab:number;
+  handleSelectTab:(index:number)=>void;
 }
-export default function SideBarExpand({ handleSideBarTab }: Props) {
-  const { sideBarExpandTabs, activeTab, handleSelectTab } =
+export default function SideBarExpand({ handleSideBarTab, activeTab,handleSelectTab }: Props) {
+  const { sideBarExpandTabs} =
     useSidebarViewModel();
   return (
     <div className="min-h-[100vh] min-w-[216px] py-5 flex  items-center flex-col gap-4 sticky left-0 text-white bg-black z-20">
@@ -39,7 +41,7 @@ export default function SideBarExpand({ handleSideBarTab }: Props) {
                 ? "bg-mainBackcolor rounded-lg text-white"
                 : ""
             }`}
-            onClick={() => handleSelectTab(index)}
+            onClick={()=>handleSelectTab(index)}
           >
             <Image
               src={`${tab.icon}.svg`}

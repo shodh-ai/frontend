@@ -4,7 +4,11 @@ import Drawer from "@mui/material/Drawer";
 import Image from "next/image";
 import { useSidebarViewModel } from "../models/SideBarTabModel";
 
-export default function TemporaryDrawer() {
+interface Props {
+  activeTab: number;
+  handleSelectTab: (index: number) => void;
+}
+export default function TemporaryDrawer({ activeTab, handleSelectTab }: Props) {
   const [open, setOpen] = React.useState(false);
   //   const toggleDrawer = (newOpen: boolean) => () => {
   //     setOpen(newOpen);
@@ -14,8 +18,7 @@ export default function TemporaryDrawer() {
     setOpen((prev) => !prev);
   };
 
-  const { sideBarExpandTabs, activeTab, handleSelectTab } =
-    useSidebarViewModel();
+  const { sideBarExpandTabs } = useSidebarViewModel();
 
   const DrawerList = (
     <Box
@@ -38,7 +41,7 @@ export default function TemporaryDrawer() {
             width={24}
             height={24}
             className="cursor-pointer"
-            onClick={()=>setOpen(false)}
+            onClick={() => setOpen(false)}
           />
           <div className="flex gap-1">
             <Image
