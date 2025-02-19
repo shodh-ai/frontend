@@ -2,7 +2,8 @@
 import type React from "react";
 import Image from "next/image";
 import { useState } from "react";
-import { useAppDispatch } from "@/src/hooks/reduxHooks";
+import { useAppDispatch , useAppSelector} from "@/src/hooks/reduxHooks";
+import { RootState } from "@/src/store";
 import { loginwithPassword } from "@/src/features/auth/auththunks";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -14,9 +15,8 @@ export default function LoginPage() {
   const [fields, setFields] = useState<boolean>(false);
 
   const dispatch = useAppDispatch();
-
+  const {status} =useAppSelector((state:RootState)=>state.auth)
   const router = useRouter();
-  console.log("sagar", username,password)
   const handleSubmit = () => {
     if(username === "" || password === ""){
       setFields(true);
@@ -24,9 +24,13 @@ export default function LoginPage() {
       return ;
     }
     dispatch(
-      loginwithPassword({ username: username, password: password, role: 3 })
+      loginwithPassword({ username: username, password: password, role: 4 })
     ).unwrap()
-      .then(() => {toast.success("Logged in Successfully!"); router.push("/")})
+      .then(() => {toast.success("Logged in Successfully!"); 
+        setTimeout(()=>{
+          router.push("/");
+        },100)
+      })
       .catch((err) => {console.error("Error while logging ", err); setInvalidPass(true)});
   };
 
@@ -107,7 +111,7 @@ export default function LoginPage() {
               className="w-full py-2.5 sm:py-3 md:py-3.5 mt-2 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E3] hover:to-[#7C4FE8] text-white rounded-lg transition-all duration-200 font-medium text-sm sm:text-base"
               onClick={handleSubmit}
             >
-              Login
+              {status ==="loading" ? "Logging in..." : "Login"}
             </button>
           </div>
         </div>

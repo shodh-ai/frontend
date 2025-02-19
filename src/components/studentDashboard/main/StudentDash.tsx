@@ -12,16 +12,11 @@ import { stat } from "fs";
 
 
 export default function StudentDash() {
-
-  // const storedData = localStorage.getItem("student");
-  // const userData = storedData ? JSON.parse(storedData) : null;
   const {userData, status} = useAppSelector((state:RootState)=>state.auth);
   const dispatch = useAppDispatch();
 
-  
- 
   useEffect(() => {
-    dispatch(getStudentDashboard({ student_id: userData?.facultyId }))
+    dispatch(getStudentDashboard({ student_id: userData?.student_id }))
       .unwrap()
       .then()
       .catch((err) => console.error("Error while fetching", err));

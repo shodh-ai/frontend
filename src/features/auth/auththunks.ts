@@ -27,8 +27,6 @@ export const loginwithPassword = createAsyncThunk<
         const parsedResponse = await response.json();
         return thunkAPI.rejectWithValue({ error: parsedResponse.message });
       }
-
-    //   const data = await response.json();
       const {token, data:{userDetails}} = await response.json();
 
       thunkAPI.dispatch(setUser({
