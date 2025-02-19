@@ -4,8 +4,8 @@ export interface LoginWithPasswordRequestBody{
     role:number,
 }
 export interface UserDataInterface{
-  facultyId:number;
-  password: string;
+  student_id:number;
+  mobile_number: string;
   username: string;
 }
 export interface LoginWithPasswordResponse {
