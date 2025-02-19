@@ -21,11 +21,11 @@ const SideBarMain = ({ children }: Props) => {
     if (activeTab === 1) {
       router.push(`/student/teaching`);
     } else if (activeTab === 2) {
-      router.push(`/student/assessment/${userData?.facultyId}`);
+      router.push(`/student/assessment/${userData?.student_id}`);
     } else if (activeTab === 3) {
-      router.push(`/student/assignment-score/${userData?.facultyId}`);
+      router.push(`/student/assignment-score/${userData?.student_id}`);
     } else if (activeTab === 4) {
-      router.push(`/student/simulation/${userData?.facultyId}`);
+      router.push(`/student/simulation/${userData?.student_id}`);
     } else {
       router.push("/");
     }
