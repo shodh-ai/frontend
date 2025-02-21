@@ -6,7 +6,7 @@ import { useSidebarViewModel } from "../models/SideBarTabModel";
 interface Props {
   handleSideBarTab: () => void;
   activeTab:number;
-  handleSelectTab:(index:number)=>void;
+  handleSelectTab:(tabIndex:number)=>void;
 }
 export default function SideBarExpand({ handleSideBarTab, activeTab,handleSelectTab }: Props) {
   const { sideBarExpandTabs} =
