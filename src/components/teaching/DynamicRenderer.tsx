@@ -17,9 +17,9 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
 
     async function loadComponent() {
       try {
-        // console.log("📌 Received JSX Code:", data.jsx_code);
-        
-        const cleanedJSX = data.jsx_code.replace(/\\n/g, "");
+        console.log("📌 Received JSX Code:", data.jsx_code);
+
+        const cleanedJSX = data.jsx_code.replace(/\\n/g, "")
         // **Step 1:** Remove `import` and `export` statements
         const sanitizedJSX = cleanedJSX
           .replace(/import\s+.*?from\s+["'].*?["'];?/g, "") // Remove import statements
@@ -64,4 +64,3 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
 };
 
 export default DynamicRenderer;
-

@@ -17,6 +17,7 @@ export const endPoints = {
         ASK_DOUBT:"ask_doubt"
     },
     studentTeaching:{
-        GET_ALL_TOPICS_BY_MODULE:"topic/get-all"
+        GET_ALL_TOPICS_BY_MODULE:"topic/get-all",
+        GET_TEACHING_VISUALIZATION:"visualization/get"
     }
 }
