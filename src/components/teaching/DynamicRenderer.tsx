@@ -84,7 +84,6 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
     <Suspense fallback={<p>⏳ Loading component...</p>}>
       {Component ? (
         <>
-          <p>✅ Component Loaded</p>
           <Component data={data} />
         </>
       ) : (
