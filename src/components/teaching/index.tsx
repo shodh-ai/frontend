@@ -13,7 +13,9 @@ import BackgroundBox from "@/src/lib/UI/BackgroundBox";
 import KnowledgeGraphMain from "./KnowledgeGraph/KnowledgeGraphMain";
 import Image from "next/image";
 import DynamicRenderer from "./DynamicRenderer";
-import { hierarchicalData } from "./mockData";
+import { useAppDispatch, useAppSelector } from "@/src/hooks/reduxHooks";
+import { RootState } from "@/src/store";
+import { getTeachingVisualization } from "@/src/features/studentTeaching/studentTeachingThunks";
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
 }
@@ -87,19 +89,6 @@ const Teaching: React.FC = () => {
     doubt_chat_state: true,
   };
 
-  const DUMMY_FLOW_DATA = {
-    teaching_flow: [
-      "Step 1: Introduce the concept of quantum computing as a new way of processing information using quantum bits or qubits.",
-      "Step 2: Explain the differences between classical computing and quantum computing in terms of how they store and manipulate data.",
-      "Step 3: Discuss the concept of superposition in quantum computing and how it allows qubits to exist in multiple states simultaneously.",
-      "Step 4: Describe the idea of entanglement in quantum computing where qubits can be correlated with each other regardless of distance.",
-      "Step 5: Show how quantum algorithms like Shor's algorithm and Grover's algorithm can solve problems much faster than classical algorithms.",
-      "Step 6: Connect quantum computing to artificial intelligence by explaining how quantum algorithms can be used to optimize machine learning models.",
-      "Step 7: Discuss the potential applications of quantum computing in AI, such as speeding up neural network training and improving optimization algorithms.",
-      "Step 8: Provide examples of current research and development in the field of quantum computing for AI, showcasing the progress being made in this interdisciplinary area.",
-    ],
-  };
-
   const handleSideTab = (index: number) => {
     if (index === 0) {
       setActiveSideTab(index);
@@ -162,72 +151,72 @@ const Teaching: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const initializeData = async () => {
-      setIsLoading(true);
-      setHasError(false);
+  // useEffect(() => {
+  //   const initializeData = async () => {
+  //     setIsLoading(true);
+  //     setHasError(false);
 
-      try {
-        // Get flow data first
-        let flowResponse = await getFlowData();
-        if (!Array.isArray(flowResponse) || flowResponse.length === 0) {
-          console.log("Using dummy flow data:", DUMMY_FLOW_DATA);
-          flowResponse = DUMMY_FLOW_DATA.teaching_flow;
-        }
+  //     try {
+  //       // Get flow data first
+  //       let flowResponse = await getFlowData();
+  //       if (!Array.isArray(flowResponse) || flowResponse.length === 0) {
+  //         console.log("Using dummy flow data:", DUMMY_FLOW_DATA);
+  //         flowResponse = DUMMY_FLOW_DATA.teaching_flow;
+  //       }
 
-        setFlowData(flowResponse);
+  //       setFlowData(flowResponse);
 
-        // Then get teaching data using the flow
-        const teachData = await getTeachingData(flowResponse, 0, []);
-        if (!teachData) {
-          console.log("Using dummy teach data:", DUMMY_TEACH_RESPONSE);
-          setVisualAid(DUMMY_TEACH_RESPONSE.assistant_visual_aid);
-          if (mainConversationHistory.length === 0) {
-            setMainConversationHistory([
-              {
-                role: "assistant",
-                content: DUMMY_TEACH_RESPONSE.assistant_reply,
-              },
-            ]);
-          }
-        } else {
-          setVisualAid(
-            teachData.assistant_visual_aid ||
-              DUMMY_TEACH_RESPONSE.assistant_visual_aid
-          );
-          if (mainConversationHistory.length === 0) {
-            setMainConversationHistory([
-              {
-                role: "assistant",
-                content: teachData.assistant_reply,
-              },
-            ]);
-          }
-        }
-      } catch (error) {
-        console.error("Error initializing data:", error);
-        console.error("Error initializing data:", error);
-        // Use dummy data as fallback without showing error state
-        setHasError(false); // Don't show error since we're falling back to dummy data
-        setFlowData(DUMMY_FLOW_DATA.teaching_flow);
-        setVisualAid(DUMMY_TEACH_RESPONSE.assistant_visual_aid);
-        if (mainConversationHistory.length === 0) {
-          setMainConversationHistory([
-            {
-              role: "assistant",
-              content: DUMMY_TEACH_RESPONSE.assistant_reply,
-            },
-          ]);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //       // Then get teaching data using the flow
+  //       const teachData = await getTeachingData(flowResponse, 0, []);
+  //       if (!teachData) {
+  //         console.log("Using dummy teach data:", DUMMY_TEACH_RESPONSE);
+  //         setVisualAid(DUMMY_TEACH_RESPONSE.assistant_visual_aid);
+  //         if (mainConversationHistory.length === 0) {
+  //           setMainConversationHistory([
+  //             {
+  //               role: "assistant",
+  //               content: DUMMY_TEACH_RESPONSE.assistant_reply,
+  //             },
+  //           ]);
+  //         }
+  //       } else {
+  //         setVisualAid(
+  //           teachData.assistant_visual_aid ||
+  //             DUMMY_TEACH_RESPONSE.assistant_visual_aid
+  //         );
+  //         if (mainConversationHistory.length === 0) {
+  //           setMainConversationHistory([
+  //             {
+  //               role: "assistant",
+  //               content: teachData.assistant_reply,
+  //             },
+  //           ]);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error initializing data:", error);
+  //       console.error("Error initializing data:", error);
+  //       // Use dummy data as fallback without showing error state
+  //       setHasError(false); // Don't show error since we're falling back to dummy data
+  //       setFlowData(DUMMY_FLOW_DATA.teaching_flow);
+  //       setVisualAid(DUMMY_TEACH_RESPONSE.assistant_visual_aid);
+  //       if (mainConversationHistory.length === 0) {
+  //         setMainConversationHistory([
+  //           {
+  //             role: "assistant",
+  //             content: DUMMY_TEACH_RESPONSE.assistant_reply,
+  //           },
+  //         ]);
+  //       }
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    if (mainConversationHistory.length === 0) {
-      initializeData();
-    }
-  }, []);
+  //   if (mainConversationHistory.length === 0) {
+  //     initializeData();
+  //   }
+  // }, []);
   // Video subtitles speech recognition setup
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -379,6 +368,16 @@ const Teaching: React.FC = () => {
     setSubtitles("");
   };
 
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(getTeachingVisualization({ topicId: 5 }))
+      .unwrap()
+      .then()
+      .catch((err) => console.error("Error while fetching", err));
+  }, [dispatch]);
+
+  const {TeachingVisualData, status} = useAppSelector((state:RootState)=>state.studentTeaching);
   // useEffect(() => {
   //   const savedConversationHistory = localStorage.getItem(
   //     "conversationHistory"
@@ -411,7 +410,7 @@ const Teaching: React.FC = () => {
               setConversationHistory={setConversationHistory}
               setActiveSideTab={setActiveSideTab}
             />
-          ) : null}
+           ) : null} 
         </div>
       )}
       <div className="relative border border-[var(--Border-Secondary)]  p-5 h-full w-full overflow-hidden rounded-xl bg-black ">
@@ -464,9 +463,10 @@ const Teaching: React.FC = () => {
             <div className="text-white p-4">Loading...</div>
           )} */}
 
+          {status === "loading" && <div className="flex justify-center text-center">Loading...</div>}
+
           <div style={{ height: "100%", width: "100%" }}>
-            <p>✅ Hierarchical Visualization Component Rendered</p>
-            <DynamicRenderer data={hierarchicalData} />
+            {TeachingVisualData && <DynamicRenderer data={TeachingVisualData} />}
           </div>
         </div>
 

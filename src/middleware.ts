@@ -14,6 +14,6 @@ export function middleware(req: NextRequest) {
 
 // Apply middleware to all routes except static assets
 export const config = {
-  matcher: ["/student/simulation/:path*","/student/assessment/:path*", "/student/assignment-score/:path*",  "/student/teaching", "/"],
+  matcher: ["/student/simulation/:path*","/student/assessment/:path*", "/student/assignment-score/:path*",  "/"],
   
 };
