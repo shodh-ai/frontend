@@ -1,13 +1,15 @@
 import React, { useEffect, useState, Suspense } from "react";
-import * as d3 from "d3"; 
-import { HierarchicalData } from "./mockData";
+import * as d3 from "d3";
+import { HierarchicalData } from "@/src/models/studentTeachingModel/TeachingVisualizationData";
 
 interface DynamicRendererProps {
   data: HierarchicalData;
 }
 
 const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
-  const [Component, setComponent] = useState<React.FC<{ data: HierarchicalData["data"] }> | null>(null);
+  const [Component, setComponent] = useState<React.FC<{
+    data: HierarchicalData;
+  }> | null>(null);
 
   useEffect(() => {
     if (!data || !data.jsx_code) {
@@ -15,31 +17,60 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
       return;
     }
 
+    if (
+      !data ||
+      !Array.isArray(data?.nodes) ||
+      !data.nodes?.length ||
+      !Array.isArray(data?.edges)
+    ) {
+      console.error(
+        "🚨 Invalid data format for hierarchical visualization:",
+        data
+      );
+      return;
+    }
+
     async function loadComponent() {
       try {
-        console.log("📌 Received JSX Code:", data.jsx_code);
+        // Ensure sanitized JSX is properly formatted
+        const cleanedJSX = data.jsx_code
+          .replace(/\\\\/g, "\\") // Remove extra backslashes
+          .replace(/\\n/g, "\n") // Convert escaped newlines
+          .replace(/\\"/g, '"'); // Convert escaped quotes
 
-        const cleanedJSX = data.jsx_code.replace(/\\n/g, "")
-        // **Step 1:** Remove `import` and `export` statements
         const sanitizedJSX = cleanedJSX
-          .replace(/import\s+.*?from\s+["'].*?["'];?/g, "") // Remove import statements
-          .replace(/export\s+default\s+/g, ""); // Remove export default
+          .replace(/import\s+.*?from\s+["'].*?["'];?/g, "") // Remove imports
+          .replace(/export\s+default\s+/g, ""); // Remove `export default`
 
-        // **Step 2:** Wrap JSX inside a function and pass `d3`
         const componentFunction = new Function(
           "React",
           "d3",
-          "props",
           `
-          const { data } = props;
-          ${sanitizedJSX} // Inject sanitized JSX code
-          return React.createElement(HierarchicalVisualization, props);
-        `
+      try {
+        ${sanitizedJSX} 
+
+        if (typeof HierarchicalVisualization === "function") {
+          return HierarchicalVisualization;
+        } else {
+          console.error("🚨 Evaluated JSX did not return a valid component.");
+          return () => React.createElement("p", null, "⚠️ Error: Invalid Component");
+        }
+      } catch (err) {
+        console.error("🚨 Error evaluating JSX code:", err);
+        return () => React.createElement('p', null, '⚠️ Error rendering component');
+      }
+      `
         );
 
-        // **Step 3:** Create a React component dynamically
-        const DynamicComponent = (props: { data: HierarchicalData["data"] }) => componentFunction(React, d3, props);
+        // Execute function
+        const DynamicComponent = componentFunction(React, d3);
 
+        if (typeof DynamicComponent !== "function") {
+          console.error(
+            "🚨 Error: Component function did not return a valid React component."
+          );
+          return;
+        }
         setComponent(() => DynamicComponent);
       } catch (error) {
         console.error("🚨 Error processing dynamic JSX code:", error);
@@ -54,7 +85,7 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
       {Component ? (
         <>
           <p>✅ Component Loaded</p>
-          <Component data={data.data} />
+          <Component data={data} />
         </>
       ) : (
         <p>⚠️ Component Not Loaded</p>

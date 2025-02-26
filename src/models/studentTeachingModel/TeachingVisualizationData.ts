@@ -1,5 +1,5 @@
  export interface Node {
-  node_id: string;
+  id: string;
   name: string;
   type: string;
   properties: string[];

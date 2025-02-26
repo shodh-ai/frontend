@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import { knowledgeGraphData } from "./data";
 import { useEffect, useState } from "react";
 import { useAppDispatch , useAppSelector} from "@/src/hooks/reduxHooks";
 import { RootState } from "@/src/store";
