@@ -21,7 +21,7 @@ export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
   };
 
   const dispatch = useAppDispatch();
-  const{TopicsData, status} = useAppSelector((state:RootState)=>state.studentTeaching);
+  const{TopicsData, TeachingVisualData,status} = useAppSelector((state:RootState)=>state.studentTeaching);
   useEffect(() => {
     dispatch(getKnowledegeGrpahData({ moduleId: 1, courseId: 2 }))
       .unwrap()
@@ -58,15 +58,15 @@ export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
 
       <div
         className={
-          "side_scroll flex flex-col gap-4 max-h-[570px] overflow-y-auto"
+          "side_scroll flex flex-col gap-3 max-h-[570px] overflow-y-auto"
         }
       >
         {TopicsData && TopicsData.map((item) => {
           const topicKey = `topic_${item.topic.topicId}`;
           return (
-            <div className="flex flex-col gap-3" key={topicKey}>
+            <div className="flex flex-col gap-2" key={topicKey}>
               <div
-                className="flex gap-2 cursor-pointer"
+                className={`flex gap-2 p-2 cursor-pointer ${TeachingVisualData?.topic_id === item.topic.topicId ? "bg-barBgColor rounded-md" : ""}  `}
                 onClick={() => toggleExpand(topicKey)}
               >
                 {expandedTopic[topicKey] ? (
@@ -93,9 +93,9 @@ export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
                 item.sub_topic.map((sub) => {
                   const subtopicKey = `subtopic_${item.topic.topicId}_${sub.topicId}`;
                   return (
-                    <div className="flex flex-col pl-3 py-1" key={subtopicKey}>
+                    <div className="flex flex-col pl-3 " key={subtopicKey}>
                       <div
-                        className="flex gap-2 cursor-pointer"
+                        className={`flex gap-2 p-2 cursor-pointer ${TeachingVisualData?.topic_id === sub.topicId ? "bg-barBgColor rounded-md" : ""}  `}
                         onClick={() => toggleExpand(subtopicKey)}
                       >
                         {expandedTopic[subtopicKey] ? (

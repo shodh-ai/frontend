@@ -393,6 +393,8 @@ const Teaching: React.FC = () => {
   //   }
   // }, [act]);
 
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
+
   return (
     <div className="h-full flex gap-3 w-full p-8">
       {activeSideTab != -1 && (

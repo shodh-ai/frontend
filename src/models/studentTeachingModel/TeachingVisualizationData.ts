@@ -20,6 +20,7 @@ export interface HierarchicalData {
   edges: Edge[];
   jsx_code: string;
   topic: string;
+  topic_id:number;
   narration: string;
 }
 
