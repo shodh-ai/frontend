@@ -1,4 +1,4 @@
- export interface Node {
+export interface Node {
   id: string;
   name: string;
   type: string;
@@ -20,6 +20,7 @@ export interface HierarchicalData {
   edges: Edge[];
   jsx_code: string;
   topic: string;
+  topic_id: number;
   narration: string;
 }
 

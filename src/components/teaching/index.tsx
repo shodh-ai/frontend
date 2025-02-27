@@ -466,12 +466,12 @@ const Teaching: React.FC = () => {
           {status === "loading" && <div className="flex justify-center text-center">Loading...</div>}
 
           <div style={{ height: "100%", width: "100%" }}>
-            {TeachingVisualData && <DynamicRenderer data={TeachingVisualData} />}
+            {TeachingVisualData && <DynamicRenderer data={TeachingVisualData}  isVideoPlaying={isVideoPlaying}/>}
           </div>
         </div>
 
-        <AudioControl mainConversationHistory={mainConversationHistory} />
-        {/* 
+        <AudioControl mainConversationHistory={mainConversationHistory}/>
+        
         <ChatOverlay
           isVisible={!isVideoPlaying}
           onClose={handleVideoToggle}
@@ -479,7 +479,7 @@ const Teaching: React.FC = () => {
           mainConversationHistory={mainConversationHistory}
           setMainConversationHistory={setMainConversationHistory}
           onSendMessage={handleSendMessage}
-        /> */}
+        />
 
         <div className="absolute bottom-0 left-0 right-0 flex w-full p-2 items-center gap-2 my-2 z-30">
           <div className="flex gap-2">
