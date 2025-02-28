@@ -45,7 +45,7 @@ const ChatOverlay: React.FC<ChatOverlayProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`absolute top-0 bottom-24 bg-black/20 backdrop-blur-sm z-20 flex items-center justify-center
+      className={`absolute inset-0 bottom-24 bg-black/20 backdrop-blur-sm z-20 flex items-center justify-center
          ${
         isVisible ? "visible" : "hidden"
       }`}
