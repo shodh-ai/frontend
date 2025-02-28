@@ -403,10 +403,8 @@ const Teaching: React.FC = () => {
             <KnowledgeGraphMain setActiveSideTab={setActiveSideTab} />
           ) : activeSideTab === 1 ? (
             <NotesOverlay
-              // isVisible={isNotesEnabled}
-              // setIsNotesEnabled={setIsNotesEnabled}
-              setIsFileModalOpen={setIsFileModalOpen}
-              handleVideoToggle={handleVideoToggle}
+             
+              // setIsFileModalOpen={setIsFileModalOpen}
               mainConversationHistory={mainConversationHistory}
               conversationHistory={conversationHistory}
               setConversationHistory={setConversationHistory}
@@ -531,7 +529,7 @@ const Teaching: React.FC = () => {
           {/* <NotesSection
             isNotesEnabled={isNotesEnabled}
             setIsNotesEnabled={setIsNotesEnabled}
-            handleVideoToggle={handleVideoToggle}
+            handleVideoToggle={handleVideoToggle----6+666+6+3+++636+63633636+363366363663366.}
           /> */}
         </div>
 

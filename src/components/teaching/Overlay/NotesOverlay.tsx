@@ -9,11 +9,9 @@ import Skeleton from "@mui/material/Skeleton";
 import Box from "@mui/material/Box";
 import Image from "next/image";
 interface NotesOverlayProps {
-  // isVisible: boolean;
-  // setIsNotesEnabled: (value: boolean) => void;
-  handleVideoToggle: () => void;
+  
   setActiveSideTab: (index: number) => void;
-  setIsFileModalOpen: (value: boolean) => void;
+  // setIsFileModalOpen: (value: boolean) => void;
   mainConversationHistory: Message[];
   conversationHistory: Message[];
   setConversationHistory: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -22,7 +20,7 @@ interface NotesOverlayProps {
 const NotesOverlay: React.FC<NotesOverlayProps> = ({
   // isVisible,
   // setIsNotesEnabled,
-  setIsFileModalOpen,
+  // setIsFileModalOpen,
   mainConversationHistory,
   conversationHistory,
   setConversationHistory,
@@ -156,7 +154,7 @@ const NotesOverlay: React.FC<NotesOverlayProps> = ({
         <MdUploadFile
           size="1.5em"
           className="cursor-pointer hover:text-gray-600"
-          onClick={() => setIsFileModalOpen(true)}
+          // onClick={() => setIsFileModalOpen(true)}
         />
         <textarea
           placeholder="Ask me anything!"
