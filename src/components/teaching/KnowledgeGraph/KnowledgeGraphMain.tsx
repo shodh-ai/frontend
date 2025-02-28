@@ -1,10 +1,14 @@
+"use client";
 import Image from "next/image";
-import { knowledgeGraphData } from "./data";
-import { useState } from "react";
-type Props={
-  setActiveSideTab: (index:number) => void;
-}
-export default function KnowledgeGraphMain({setActiveSideTab}:Props) {
+import { useEffect, useState } from "react";
+import { useAppDispatch , useAppSelector} from "@/src/hooks/reduxHooks";
+import { RootState } from "@/src/store";
+import { getKnowledegeGrpahData } from "@/src/features/studentTeaching/studentTeachingThunks";
+
+type Props = {
+  setActiveSideTab: (index: number) => void;
+};
+export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
   const [expandedTopic, setExpandedTopic] = useState<{
     [key: string]: boolean;
   }>({});
@@ -16,6 +20,19 @@ export default function KnowledgeGraphMain({setActiveSideTab}:Props) {
     }));
   };
 
+  const dispatch = useAppDispatch();
+  const{TopicsData, status, TeachingVisualData} = useAppSelector((state:RootState)=>state.studentTeaching);
+  useEffect(() => {
+    dispatch(getKnowledegeGrpahData({ moduleId: 1, courseId: 2 }))
+      .unwrap()
+      .then()
+      .catch((err) => console.error("Error while fetching", err));
+  }, [dispatch]);
+
+  if(status === "loading"){
+    return <div className="flex justify-center ">Loading...</div>;
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex justify-between text-assessmentTextColor">
@@ -26,7 +43,7 @@ export default function KnowledgeGraphMain({setActiveSideTab}:Props) {
           height={16}
           width={16}
           className="cursor-pointer"
-          onClick={()=>setActiveSideTab(-1)}
+          onClick={() => setActiveSideTab(-1)}
         />
       </div>
 
@@ -39,13 +56,17 @@ export default function KnowledgeGraphMain({setActiveSideTab}:Props) {
         />
       </div>
 
-      <div className={"side_scroll flex flex-col gap-4 max-h-[570px] overflow-y-auto"}>
-        {knowledgeGraphData.map((item) => {
-          const topicKey = `topic_${item.topic_id}`;
+      <div
+        className={
+          "side_scroll flex flex-col gap-4 max-h-[570px] overflow-y-auto"
+        }
+      >
+        {TopicsData && TopicsData.map((item) => {
+          const topicKey = `topic_${item.topic.topicId}`;
           return (
             <div className="flex flex-col gap-3" key={topicKey}>
               <div
-                className="flex gap-2 cursor-pointer"
+                className={`flex gap-2 p-2 cursor-pointer ${TeachingVisualData?.topic_id === item.topic.topicId ? "bg-barBgColor rounded-md" : ""}  `}
                 onClick={() => toggleExpand(topicKey)}
               >
                 {expandedTopic[topicKey] ? (
@@ -64,17 +85,17 @@ export default function KnowledgeGraphMain({setActiveSideTab}:Props) {
                   />
                 )}
                 <div className="text-xs text-[var(--Content-Primary-static)]">
-                  {item.topic_name}
+                  {item.topic.title}
                 </div>
               </div>
               {expandedTopic[topicKey] &&
-                item.subtopics.length > 0 &&
-                item.subtopics.map((sub) => {
-                  const subtopicKey = `subtopic_${item.topic_id}_${sub.subtopic_id}`;
+                item.sub_topic.length > 0 &&
+                item.sub_topic.map((sub) => {
+                  const subtopicKey = `subtopic_${item.topic.topicId}_${sub.topicId}`;
                   return (
                     <div className="flex flex-col pl-3 py-1" key={subtopicKey}>
                       <div
-                        className="flex gap-2 cursor-pointer"
+                        className={`flex gap-2 p-2 cursor-pointer ${TeachingVisualData?.topic_id === sub.topicId ? "bg-barBgColor rounded-md" : ""}  `}
                         onClick={() => toggleExpand(subtopicKey)}
                       >
                         {expandedTopic[subtopicKey] ? (
@@ -93,10 +114,10 @@ export default function KnowledgeGraphMain({setActiveSideTab}:Props) {
                           />
                         )}
                         <div className="text-xs text-[var(--Content-Primary-static)]">
-                          {sub.subtopic_name}
+                          {sub.title}
                         </div>
                       </div>
-                      {expandedTopic[subtopicKey] &&
+                      {/* {expandedTopic[subtopicKey] &&
                         sub.subtopics.map((supersub, ind) => (
                           <div
                             className="text-xs text-[var(--Content-Primary-static)] pl-6  pt-3"
@@ -104,7 +125,7 @@ export default function KnowledgeGraphMain({setActiveSideTab}:Props) {
                           >
                             {supersub}
                           </div>
-                        ))}
+                        ))} */}
                     </div>
                   );
                 })}

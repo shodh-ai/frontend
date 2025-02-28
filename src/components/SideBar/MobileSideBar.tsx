@@ -6,7 +6,7 @@ import { useSidebarViewModel } from "../models/SideBarTabModel";
 
 interface Props {
   activeTab: number;
-  handleSelectTab: (index: number) => void;
+  handleSelectTab: (tabIndex: number) => void;
 }
 export default function TemporaryDrawer({ activeTab, handleSelectTab }: Props) {
   const [open, setOpen] = React.useState(false);

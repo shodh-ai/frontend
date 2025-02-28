@@ -5,7 +5,7 @@ import { useSidebarViewModel } from "../models/SideBarTabModel";
 interface Props {
   handleSideBarTab: ()=>void,
   activeTab:number;
-  handleSelectTab:(index:number)=>void;
+  handleSelectTab:(tabIndex:number)=>void;
 }
 export default function SidebarTab({handleSideBarTab, activeTab, handleSelectTab} : Props){
   const { tabs } = useSidebarViewModel();
