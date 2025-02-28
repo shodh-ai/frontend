@@ -371,7 +371,7 @@ const Teaching: React.FC = () => {
   return (
     <div className="h-full flex gap-3 w-full p-8">
       {activeSideTab != -1 && (
-        <div className="border flex flex-col min-h-[664px] gap-3 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white w-full max-w-[300px]">
+        <div className="border flex flex-col gap-3 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white w-full max-w-[300px]">
           {activeSideTab === 0 ? (
             <KnowledgeGraphMain setActiveSideTab={setActiveSideTab} />
           ) : activeSideTab === 1 ? (
@@ -396,7 +396,7 @@ const Teaching: React.FC = () => {
           <div style={{ height: "100%", width: "100%" }}>
             {TeachingVisualData && (
               <Suspense fallback={<p style={{ color: "white", textAlign: "center" }}>⏳ Loading...</p>}>
-                <DynamicRenderer data={TeachingVisualData} isVideoPlaying={isVideoPlaying} />
+                <DynamicRenderer data={TeachingVisualData}  />
               </Suspense>
             )}
           </div>
