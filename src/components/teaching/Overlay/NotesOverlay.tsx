@@ -95,7 +95,7 @@ const NotesOverlay: React.FC<NotesOverlayProps> = ({
     //   }`}
     // >
     // {/* <div className="w-[50%] border-2 border-zinc-600 h-full rounded-xl shadow-lg flex flex-col"> */}
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col ">
       <div className=" flex justify-between">
         <div className="text-xs font-bold text-assessmentTextColor tracking-widest">
           DOUBTS
@@ -150,7 +150,7 @@ const NotesOverlay: React.FC<NotesOverlayProps> = ({
           </>
         </div>
       </div>
-      <div className="flex bg-zinc-900 rounded p-2  gap-5 flex-1 justify-center items-center relative">
+      <div className="flex bg-zinc-900 rounded p-2  gap-5 flex-1 justify-center items-center absolute bottom-5 left-2 right-2">
         <MdUploadFile
           size="1.5em"
           className="cursor-pointer hover:text-gray-600"

@@ -21,7 +21,7 @@ export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
   };
 
   const dispatch = useAppDispatch();
-  const{TopicsData, TeachingVisualData,status} = useAppSelector((state:RootState)=>state.studentTeaching);
+  const{TopicsData, status, TeachingVisualData} = useAppSelector((state:RootState)=>state.studentTeaching);
   useEffect(() => {
     dispatch(getKnowledegeGrpahData({ moduleId: 1, courseId: 2 }))
       .unwrap()
@@ -58,7 +58,7 @@ export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
 
       <div
         className={
-          "side_scroll flex flex-col gap-3 max-h-[570px] overflow-y-auto"
+          "side_scroll flex flex-col gap-3 max-h-[480px]  overflow-y-auto"
         }
       >
         {TopicsData && TopicsData.map((item) => {

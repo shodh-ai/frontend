@@ -1,4 +1,4 @@
- export interface Node {
+export interface Node {
   id: string;
   name: string;
   type: string;
@@ -20,7 +20,7 @@ export interface HierarchicalData {
   edges: Edge[];
   jsx_code: string;
   topic: string;
-  topic_id:number;
+  topic_id: number;
   narration: string;
 }
 
@@ -29,4 +29,16 @@ export interface TeachingVisualizationResponse {
   data: HierarchicalData;
   status: string;
   status_code: number;
+}
+
+
+export interface TemporaryVisualization {
+  nodes: Node[];
+  edges: Edge[];
+  jsx_code: string;
+  topic: string;
+  narration: string;
+  narration_timestamps: [];
+  animation_states:[];
+  node_id:null;
 }
