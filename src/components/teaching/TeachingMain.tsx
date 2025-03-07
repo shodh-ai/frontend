@@ -103,7 +103,7 @@ export default function TeachingMain() {
  */}
         <RenderComponent handleSideTab={handleSideTab} activeSideTab={activeSideTab}/>
 
-        {currentSubtitle && (
+        {/* {currentSubtitle && (
             <div
               className={"side_scroll"}
               style={{
@@ -131,7 +131,7 @@ export default function TeachingMain() {
             >
               {currentSubtitle}
             </div>
-          )}
+          )} */}
 
         {/* <div className="absolute bottom-0 left-0 right-0 flex w-full p-2 items-center gap-2 my-2 z-30">
           <div className="flex gap-2">
