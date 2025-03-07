@@ -23,7 +23,6 @@ const VisualizationController = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [narrationTimestamps, setNarrationTimestamps] = useState([]);
   const [isHighlightPlayButton, setIsHighlightPlayButton] = useState(false);
-  const [currentSubtitle, setCurrentSubtitle] = useState(""); // New state for subtitles
   const [content, setContent] = useState("");
   // Add new state for caching
 
@@ -167,7 +166,6 @@ const VisualizationController = ({
       // Clear highlights if no current timings
       setHighlightedElements([]);
     }
-    updateSubtitles(currentTime);
 
 
     // Continue animation loop
@@ -175,38 +173,67 @@ const VisualizationController = ({
   };
 
 
-  const updateSubtitles = (currentTime) => {
-    if (!narrationTimestamps.length) {
-      setCurrentSubtitle("");
-      return;
-    }
-
-    // Group words into phrases/sentences based on punctuation or time gaps
-    let subtitle = "";
-    let startIdx = 0;
-
-    for (let i = 0; i < narrationTimestamps.length; i++) {
-      const timing = narrationTimestamps[i];
-      if (currentTime >= timing.start_time && currentTime <= timing.end_time) {
-        // Find the start of the phrase (backtrack to previous sentence boundary)
-        startIdx = i;
-        while (startIdx > 0 && !/[.!?]/.test(narrationTimestamps[startIdx - 1].word)) {
-          startIdx--;
+  const useAudioNarration = (audioRef, narration, narrationTimestamps, isPlaying) => {
+    const [currentSubtitle, setCurrentSubtitle] = useState("");
+  
+    useEffect(() => {
+      if (!audioRef.current || !narrationTimestamps.length || !narration || !isPlaying) return;
+  
+      const paragraphs = narration.split(/\n\s*\n|\n{2,}/).map((p) => p.trim()).filter((p) => p !== "");
+  
+      const paragraphTimings = [];
+      let wordIndex = 0;
+  
+      paragraphs.forEach((paragraph, i) => {
+        const words = paragraph.split(/\s+/);
+        const firstWord = words[0];
+        const lastWord = words[words.length - 1];
+  
+        let startTime = null;
+        let endTime = null;
+  
+        for (; wordIndex < narrationTimestamps.length; wordIndex++) {
+          const wordObj = narrationTimestamps[wordIndex];
+          if (!startTime && wordObj.word === firstWord) {
+            startTime = wordObj.start_time - 50; 
+          }
+          if (wordObj.word === lastWord) {
+            endTime = wordObj.end_time + 50; 
+            break;
+          }
         }
-
-        // Build subtitle until the next sentence boundary or end
-        subtitle = narrationTimestamps[startIdx].word;
-        for (let j = startIdx + 1; j < narrationTimestamps.length; j++) {
-          const nextWord = narrationTimestamps[j].word;
-          subtitle += " " + nextWord;
-          if (/[.!?]/.test(nextWord)) break; // Stop at sentence boundary
+  
+        if (startTime !== null && endTime !== null) {
+          paragraphTimings.push({ start_time: startTime, end_time: endTime, index: i });
         }
-        break;
-      }
-    }
+      });
+  
+      const updateSubtitles = () => {
+        if (!audioRef.current) return;
+        const currentTime = audioRef.current.currentTime * 1000; 
 
-    setCurrentSubtitle(subtitle || "");
+        const activeParagraph = paragraphTimings.find(
+          (p) => currentTime >= p.start_time && currentTime <= p.end_time
+        );
+  
+        if (activeParagraph) {
+          setCurrentSubtitle(paragraphs[activeParagraph.index]);
+        } else {
+          setCurrentSubtitle(""); 
+        }
+      };
+  
+      audioRef.current.addEventListener("timeupdate", updateSubtitles);
+  
+      return () => {
+        audioRef.current?.removeEventListener("timeupdate", updateSubtitles);
+      };
+    }, [audioRef, narration, narrationTimestamps, isPlaying]);
+  
+    return { currentSubtitle };
   };
+  
+    const { currentSubtitle } = useAudioNarration(audioRef, narration, narrationTimestamps, isPlaying);
 
   // Add cleanup for highlights when audio ends or errors
   
@@ -581,7 +608,6 @@ const handleDoubtSubmission = async (doubt) => {
     originalPlaybackPosition,
   ]);
 
-  console.log("111", content);
 
   return (
     <div className="visualization-controller ">
