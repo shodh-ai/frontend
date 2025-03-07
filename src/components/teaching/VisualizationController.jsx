@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MdClose, MdMicNone, MdPause, MdPlayArrow } from "react-icons/md";
 import * as d3 from "d3";
-import { generateNarrationAudioAPI } from "@/src/services/teachingapi";
+import { generateNarrationAudioAPI, processDoubtAPI } from "@/src/services/teachingapi";
 import Image from "next/image";
 
 const VisualizationController = ({
@@ -14,7 +14,7 @@ const VisualizationController = ({
   const [highlightedElements, setHighlightedElements] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  // const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [narration, setNarration] = useState("");
   const [originalNarration, setOriginalNarration] = useState("");
   const [isOriginalNarration, setIsOriginalNarration] = useState(true);
@@ -23,6 +23,8 @@ const VisualizationController = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [narrationTimestamps, setNarrationTimestamps] = useState([]);
   const [isHighlightPlayButton, setIsHighlightPlayButton] = useState(false);
+  const [currentSubtitle, setCurrentSubtitle] = useState(""); // New state for subtitles
+  const [content, setContent] = useState("");
   // Add new state for caching
 
   const [originalAudioUrl, setOriginalAudioUrl] = useState(null);
@@ -40,54 +42,15 @@ const VisualizationController = ({
   const playButtonRef = useRef(null);
   const animationFrameRef = useRef(null);
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      // handleSubmit();
-    }
-  };
+  
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
   };
 
-  const handleVideoPausing = () => {
-    setIsVideoPlaying(!isVideoPlaying);
-  };
+
   // Initialize narration from data prop
   useEffect(() => {
-    if (data?.narration) {
-      setNarration(data.narration);
-      setOriginalNarration(data.narration);
-      setIsOriginalNarration(true);
-      
-
-      // Check if we have cached audio for this narration
-      // const cachedAudioUrl = localStorage.getItem(`${topic}_audio_url`);
-      // const cachedWordTimings = localStorage.getItem(`${topic}_word_timings`);
-      // const cachedNarrationText = localStorage.getItem(`${topic}_narration_text`);
-
-      // if (cachedAudioUrl && cachedWordTimings && cachedNarrationText === data.narration) {
-      //   console.log('Using cached audio file:', cachedAudioUrl);
-      //   // Verify the cached audio file is still accessible
-      //   fetch(cachedAudioUrl)
-      //     .then(response => {
-      //       if (response.ok) {
-      //         setOriginalAudioUrl(cachedAudioUrl);
-      //         setOriginalTimestamps(JSON.parse(cachedWordTimings));
-      //         setAudioUrl(cachedAudioUrl);
-      //         setNarrationTimestamps(JSON.parse(cachedWordTimings));
-      //       } else {
-      //         throw new Error('Cached audio file not accessible');
-      //       }
-      //     })
-      //     .catch(error => {
-      //       console.warn('Cached audio not available, generating new audio:', error);
-      //       generateNarrationAudio(data.narration, true);
-      //     });
-      // } else {
-      // Generate new audio if no cache or narration text has changed
-      // generateNarrationAudio(data.narration, false);
-      // }
 
       const loadNarration = async () => {
         if (data?.narration) {
@@ -98,7 +61,7 @@ const VisualizationController = ({
         }
       };
       loadNarration();
-    }
+    
   }, [data]);
 
   
@@ -204,12 +167,49 @@ const VisualizationController = ({
       // Clear highlights if no current timings
       setHighlightedElements([]);
     }
+    updateSubtitles(currentTime);
+
 
     // Continue animation loop
     animationFrameRef.current = requestAnimationFrame(updateHighlights);
   };
 
+
+  const updateSubtitles = (currentTime) => {
+    if (!narrationTimestamps.length) {
+      setCurrentSubtitle("");
+      return;
+    }
+
+    // Group words into phrases/sentences based on punctuation or time gaps
+    let subtitle = "";
+    let startIdx = 0;
+
+    for (let i = 0; i < narrationTimestamps.length; i++) {
+      const timing = narrationTimestamps[i];
+      if (currentTime >= timing.start_time && currentTime <= timing.end_time) {
+        // Find the start of the phrase (backtrack to previous sentence boundary)
+        startIdx = i;
+        while (startIdx > 0 && !/[.!?]/.test(narrationTimestamps[startIdx - 1].word)) {
+          startIdx--;
+        }
+
+        // Build subtitle until the next sentence boundary or end
+        subtitle = narrationTimestamps[startIdx].word;
+        for (let j = startIdx + 1; j < narrationTimestamps.length; j++) {
+          const nextWord = narrationTimestamps[j].word;
+          subtitle += " " + nextWord;
+          if (/[.!?]/.test(nextWord)) break; // Stop at sentence boundary
+        }
+        break;
+      }
+    }
+
+    setCurrentSubtitle(subtitle || "");
+  };
+
   // Add cleanup for highlights when audio ends or errors
+  
   const handleAudioEnd = () => {
     setIsPlaying(false);
     setHighlightedElements([]);
@@ -255,165 +255,278 @@ const VisualizationController = ({
     }
   };
 
-  const handleDoubtSubmission = async (doubt) => {
-    try {
-      if (isPlaying && isOriginalNarration && audioRef.current) {
-        setOriginalPlaybackPosition(audioRef.current.currentTime * 1000);
-        audioRef.current.pause();
-        setIsPlaying(false);
+  // const handleDoubtSubmission = async (doubt) => {
+  //   try {
+  //     if (isPlaying && isOriginalNarration && audioRef.current) {
+  //       setOriginalPlaybackPosition(audioRef.current.currentTime * 1000);
+  //       audioRef.current.pause();
+  //       setIsPlaying(false);
+  //     }
+
+  //     setNarration("Processing your question...");
+
+  //     const response = await fetch("https://d259-2401-4900-8821-9282-e9fd-ea41-8b61-864d.ngrok-free.app/api/process-doubt", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         doubt,
+  //         topic,
+  //         currentState: {
+  //           data,
+  //           highlightedElements,
+  //           currentTime: audioRef.current?.currentTime * 1000 || 0,
+  //           isOriginalNarration,
+  //           currentNarration: narration,
+  //         },
+  //         relevantNodes: data.nodes
+  //           .filter((node) => highlightedElements.some((h) => h.id === node.id))
+  //           .map((node) => ({
+  //             id: node.id,
+  //             name: node.name,
+  //             type: node.type,
+  //             properties: node.properties || node.columns,
+  //           })),
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.detail || `Server error: ${response.status}`);
+  //     }
+
+  //     const result = await response.json();
+
+  //     if (result.error) {
+  //       throw new Error(result.error);
+  //     }
+
+  //     // Try to parse the response if it's a string
+  //     let parsedResult = result;
+  //     if (typeof result === "string") {
+  //       try {
+  //         parsedResult = JSON.parse(result);
+  //       } catch (e) {
+  //         console.warn("Could not parse response as JSON, using as-is");
+  //         parsedResult = { explanation: result };
+  //       }
+  //     }
+
+  //     // Format the response for better readability
+  //     let formattedNarration = "";
+
+  //     // Add the question for context
+  //     formattedNarration += `Q: ${doubt}\n\n`;
+
+  //     // Add the main explanation
+  //     if (parsedResult.explanation) {
+  //       formattedNarration += parsedResult.explanation + "\n\n";
+  //     }
+
+  //     // Add any additional context or related information
+  //     if (parsedResult.additionalInfo) {
+  //       formattedNarration += parsedResult.additionalInfo + "\n\n";
+  //     }
+
+  //     // Add component details with improved formatting
+  //     if (parsedResult.componentDetails) {
+  //       formattedNarration += "Key Components:\n";
+  //       Object.entries(parsedResult.componentDetails).forEach(
+  //         ([key, value]) => {
+  //           formattedNarration += `• ${key}: ${
+  //             typeof value === "string" ? value : value.description
+  //           }\n`;
+  //         }
+  //       );
+  //       formattedNarration += "\n";
+  //     }
+
+  //     // Add examples section
+  //     if (parsedResult.examples?.length) {
+  //       formattedNarration += "Examples:\n";
+  //       parsedResult.examples.forEach((example, i) => {
+  //         formattedNarration += `${i + 1}. ${example}\n`;
+  //       });
+  //       formattedNarration += "\n";
+  //     }
+
+  //     // Add recommendations section
+  //     if (parsedResult.recommendations?.length) {
+  //       formattedNarration += "Recommendations:\n";
+  //       parsedResult.recommendations.forEach((rec) => {
+  //         formattedNarration += `• ${rec}\n`;
+  //       });
+  //     }
+
+  //     setNarration(formattedNarration);
+  //     setIsOriginalNarration(false);
+
+  //     if (parsedResult.highlightElements) {
+  //       setHighlightedElements(parsedResult.highlightElements);
+  //     }
+
+  //     if (formattedNarration) {
+  //       generateNarrationAudio(formattedNarration, false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error processing doubt:", error);
+  //     setNarration(
+  //       `I apologize, but I encountered an error while processing your question:\n${error.message}\n\nPlease try rephrasing your question or ask about a different aspect of the topic.`
+  //     );
+  //     setIsOriginalNarration(false);
+  //   }
+  // };
+
+
+const handleDoubtSubmission = async (doubt) => {
+  try {
+    if (isPlaying && isOriginalNarration && audioRef.current) {
+      setOriginalPlaybackPosition(audioRef.current.currentTime * 1000);
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+
+    setNarration("Processing your question...");
+
+    const currentState = {
+      data,
+      highlightedElements,
+      currentTime: audioRef.current?.currentTime * 1000 || 0,
+      isOriginalNarration,
+      currentNarration: narration,
+    };
+
+    const relevantNodes = data.nodes
+      .filter((node) => highlightedElements.some((h) => h.id === node.id))
+      .map((node) => ({
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        properties: node.properties || node.columns,
+      }));
+
+    const result = await processDoubtAPI(doubt, topic, currentState, relevantNodes);
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    let parsedResult = result;
+    if (typeof result === "string") {
+      try {
+        parsedResult = JSON.parse(result);
+      } catch (e) {
+        console.warn("Could not parse response as JSON, using as-is");
+        parsedResult = { explanation: result };
       }
+    }
 
-      setNarration("Processing your question...");
+    let formattedNarration = `Q: ${doubt}\n\n`;
 
-      const response = await fetch("/api/process-doubt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          doubt,
-          topic,
-          currentState: {
-            data,
-            highlightedElements,
-            currentTime: audioRef.current?.currentTime * 1000 || 0,
-            isOriginalNarration,
-            currentNarration: narration,
-          },
-          relevantNodes: data.nodes
-            .filter((node) => highlightedElements.some((h) => h.id === node.id))
-            .map((node) => ({
-              id: node.id,
-              name: node.name,
-              type: node.type,
-              properties: node.properties || node.columns,
-            })),
-        }),
-      });
+    if (parsedResult.explanation) {
+      formattedNarration += parsedResult.explanation + "\n\n";
+    }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || `Server error: ${response.status}`);
-      }
+    if (parsedResult.additionalInfo) {
+      formattedNarration += parsedResult.additionalInfo + "\n\n";
+    }
 
-      const result = await response.json();
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      // Try to parse the response if it's a string
-      let parsedResult = result;
-      if (typeof result === "string") {
-        try {
-          parsedResult = JSON.parse(result);
-        } catch (e) {
-          console.warn("Could not parse response as JSON, using as-is");
-          parsedResult = { explanation: result };
+    if (parsedResult.componentDetails) {
+      formattedNarration += "Key Components:\n";
+      Object.entries(parsedResult.componentDetails).forEach(
+        ([key, value]) => {
+          formattedNarration += `• ${key}: ${
+            typeof value === "string" ? value : value.description
+          }\n`;
         }
-      }
-
-      // Format the response for better readability
-      let formattedNarration = "";
-
-      // Add the question for context
-      formattedNarration += `Q: ${doubt}\n\n`;
-
-      // Add the main explanation
-      if (parsedResult.explanation) {
-        formattedNarration += parsedResult.explanation + "\n\n";
-      }
-
-      // Add any additional context or related information
-      if (parsedResult.additionalInfo) {
-        formattedNarration += parsedResult.additionalInfo + "\n\n";
-      }
-
-      // Add component details with improved formatting
-      if (parsedResult.componentDetails) {
-        formattedNarration += "Key Components:\n";
-        Object.entries(parsedResult.componentDetails).forEach(
-          ([key, value]) => {
-            formattedNarration += `• ${key}: ${
-              typeof value === "string" ? value : value.description
-            }\n`;
-          }
-        );
-        formattedNarration += "\n";
-      }
-
-      // Add examples section
-      if (parsedResult.examples?.length) {
-        formattedNarration += "Examples:\n";
-        parsedResult.examples.forEach((example, i) => {
-          formattedNarration += `${i + 1}. ${example}\n`;
-        });
-        formattedNarration += "\n";
-      }
-
-      // Add recommendations section
-      if (parsedResult.recommendations?.length) {
-        formattedNarration += "Recommendations:\n";
-        parsedResult.recommendations.forEach((rec) => {
-          formattedNarration += `• ${rec}\n`;
-        });
-      }
-
-      setNarration(formattedNarration);
-      setIsOriginalNarration(false);
-
-      if (parsedResult.highlightElements) {
-        setHighlightedElements(parsedResult.highlightElements);
-      }
-
-      if (formattedNarration) {
-        generateNarrationAudio(formattedNarration, false);
-      }
-    } catch (error) {
-      console.error("Error processing doubt:", error);
-      setNarration(
-        `I apologize, but I encountered an error while processing your question:\n${error.message}\n\nPlease try rephrasing your question or ask about a different aspect of the topic.`
       );
-      setIsOriginalNarration(false);
+      formattedNarration += "\n";
+    }
+
+    if (parsedResult.examples?.length) {
+      formattedNarration += "Examples:\n";
+      parsedResult.examples.forEach((example, i) => {
+        formattedNarration += `${i + 1}. ${example}\n`;
+      });
+      formattedNarration += "\n";
+    }
+
+    if (parsedResult.recommendations?.length) {
+      formattedNarration += "Recommendations:\n";
+      parsedResult.recommendations.forEach((rec) => {
+        formattedNarration += `• ${rec}\n`;
+      });
+    }
+
+    setNarration(formattedNarration);
+    setIsOriginalNarration(false);
+
+    if (parsedResult.highlightElements) {
+      setHighlightedElements(parsedResult.highlightElements);
+    }
+
+    if (formattedNarration) {
+      generateNarrationAudio(formattedNarration, false);
+    }
+  } catch (error) {
+    console.error("Error processing doubt:", error);
+    setNarration(
+      `I encountered an error while processing your question:\n${error.message}\n\nPlease try rephrasing your question or ask about a different aspect of the topic.`
+    );
+    setIsOriginalNarration(false);
+  }
+};
+
+  
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleDoubtSubmission(content);
+      setContent("")
     }
   };
 
+  const handleChange = (e)=>{
+    setContent(e);
+  }
+
+
   // Add components for enhanced features
-  const renderInteractiveElements = () => {
-    if (!interactiveElements.length) return null;
+  // const renderInteractiveElements = () => {
+  //   if (!interactiveElements.length) return null;
 
-    return (
-      <div className="interactive-suggestions">
-        {interactiveElements.map((element, index) => (
-          <div key={index} className="interactive-suggestion">
-            <span className={`icon ${element.type}`} />
-            <span className="message">{element.message}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
+  //   return (
+  //     <div className="interactive-suggestions">
+  //       {interactiveElements.map((element, index) => (
+  //         <div key={index} className="interactive-suggestion">
+  //           <span className={`icon ${element.type}`} />
+  //           <span className="message">{element.message}</span>
+  //         </div>
+  //       ))}
+  //     </div>
+  //   );
+  // };
 
-  const renderRelatedConcepts = () => {
-    if (!relatedConcepts.length) return null;
+  // const renderRelatedConcepts = () => {
+  //   if (!relatedConcepts.length) return null;
 
-    return (
-      <div className="related-concepts">
-        <h4>Related Concepts</h4>
-        <div className="concept-list">
-          {relatedConcepts.map((concept, index) => (
-            <button
-              key={index}
-              className="concept-button"
-              onClick={() => handleDoubtSubmission(`Tell me about ${concept}`)}
-            >
-              {concept}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  //   return (
+  //     <div className="related-concepts">
+  //       <h4>Related Concepts</h4>
+  //       <div className="concept-list">
+  //         {relatedConcepts.map((concept, index) => (
+  //           <button
+  //             key={index}
+  //             className="concept-button"
+  //             onClick={() => handleDoubtSubmission(`Tell me about ${concept}`)}
+  //           >
+  //             {concept}
+  //           </button>
+  //         ))}
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   // Add a helper function to format the doubt response
   const formatDoubtResponse = (response) => {
@@ -468,6 +581,8 @@ const VisualizationController = ({
     originalPlaybackPosition,
   ]);
 
+  console.log("111", content);
+
   return (
     <div className="visualization-controller ">
       <VisualizationComponent
@@ -485,6 +600,34 @@ const VisualizationController = ({
           style={{ display: "none" }}
           controls
         />
+      )}
+      {currentSubtitle && (
+        <div
+          className="side_scroll"
+          style={{
+            position: "absolute",
+            bottom: "80px",
+            left: "50%",
+            maxHeight: "80px",
+            transform: "translateX(-50%)",
+            backgroundColor: "rgba(32, 32, 32, 0.85)",
+            color: "#fff",
+            padding: "12px 16px",
+            borderRadius: "10px",
+            textAlign: "left",
+            width: "90%",
+            maxWidth: "1000px",
+            fontSize: "16px",
+            fontWeight: "400",
+            lineHeight: "1.4",
+            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+            wordBreak: "break-word",
+            transition: "opacity 0.3s ease-in-out",
+            overflowY: "auto",
+          }}
+        >
+          {currentSubtitle}
+        </div>
       )}
       <div className="absolute bottom-0 left-0 right-0 flex w-full p-2 items-center gap-2 my-2 z-30">
         <div className="flex gap-2">
@@ -528,9 +671,9 @@ const VisualizationController = ({
             <input
               placeholder="Ask me anything!"
               className="border-none focus:outline-none   bg-transparent w-full text-nowrap"
-              // onChange={(e) => handleChange(e.target.value)}
+              onChange={(e) => handleChange(e.target.value)}
               type="text"
-              // value={content}
+              value={content}
               onKeyDown={handleKeyDown}
             />
           </div>
@@ -540,7 +683,7 @@ const VisualizationController = ({
             alt="image"
             height={32}
             width={32}
-            // onClick={handleSubmit}
+            onClick={()=>{handleDoubtSubmission(content);setContent("")}}
           />
         </div>
         <div className="flex gap-2">
