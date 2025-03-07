@@ -2,7 +2,7 @@
 const baseUrl = process.env.NEXT_PUBLIC_SHODH_ML_URL;
 
 
-export const generateNarrationAudioAPI = async (text) => {
+export const generateNarrationAudioAPI = async (text, topic) => {
     try {
       console.log("Generating audio for text:", text);
   

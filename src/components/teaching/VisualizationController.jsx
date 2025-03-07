@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MdClose, MdMicNone, MdPause, MdPlayArrow } from "react-icons/md";
 import * as d3 from "d3";
-import {generateNarrationAudioAPI} from "@/src/services/teachingapi";
+import { generateNarrationAudioAPI } from "@/src/services/teachingapi";
 import Image from "next/image";
 
 const VisualizationController = ({
@@ -12,6 +12,7 @@ const VisualizationController = ({
   handleSideTab,
 }) => {
   const [highlightedElements, setHighlightedElements] = useState([]);
+  const [isBlocked, setIsBlocked] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [narration, setNarration] = useState("");
@@ -21,8 +22,9 @@ const VisualizationController = ({
   const [audioUrl, setAudioUrl] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [narrationTimestamps, setNarrationTimestamps] = useState([]);
-
+  const [isHighlightPlayButton, setIsHighlightPlayButton] = useState(false);
   // Add new state for caching
+
   const [originalAudioUrl, setOriginalAudioUrl] = useState(null);
   const [originalTimestamps, setOriginalTimestamps] = useState([]);
   const [originalPlaybackPosition, setOriginalPlaybackPosition] = useState(0);
@@ -31,9 +33,11 @@ const VisualizationController = ({
   const [interactiveElements, setInteractiveElements] = useState([]);
   const [relatedConcepts, setRelatedConcepts] = useState([]);
   const [showingExample, setShowingExample] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
 
   const visualizationRef = useRef(null);
   const audioRef = useRef(null);
+  const playButtonRef = useRef(null);
   const animationFrameRef = useRef(null);
 
   const handleKeyDown = (e) => {
@@ -48,14 +52,6 @@ const VisualizationController = ({
 
   const handleVideoPausing = () => {
     setIsVideoPlaying(!isVideoPlaying);
-    if(audioRef.current){
-      if(isVideoPlaying){
-        audioRef.current.pause();
-      }
-      else{
-        audioRef.current.play();
-      }
-    }
   };
   // Initialize narration from data prop
   useEffect(() => {
@@ -63,6 +59,7 @@ const VisualizationController = ({
       setNarration(data.narration);
       setOriginalNarration(data.narration);
       setIsOriginalNarration(true);
+      
 
       // Check if we have cached audio for this narration
       // const cachedAudioUrl = localStorage.getItem(`${topic}_audio_url`);
@@ -89,94 +86,36 @@ const VisualizationController = ({
       //     });
       // } else {
       // Generate new audio if no cache or narration text has changed
-      generateNarrationAudio(data.narration, false);
+      // generateNarrationAudio(data.narration, false);
       // }
+
+      const loadNarration = async () => {
+        if (data?.narration) {
+          setNarration(data.narration);
+          setOriginalNarration(data.narration);
+          setIsOriginalNarration(true);
+          await generateNarrationAudio(data.narration, false); // Wait for audio generation
+        }
+      };
+      loadNarration();
     }
   }, [data]);
 
-  // const generateNarrationAudio = async (text, isOriginal = false) => {
-  //   try {
-  //     console.log("Generating audio for text:", text);
-  //     const response = await fetch(`
-  //       ${baseUrl}/api/narration/` +
-  //         topic,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ text }),
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json();
-  //       console.error("Server error response:", errorData);
-  //       throw new Error(
-  //         errorData.detail || `HTTP error! status: ${response.status}`
-  //       );
-  //     }
-
-  //     const result = await response.json();
-  //     console.log("Audio generation result:", result);
-
-  //     if (result.error) {
-  //       throw new Error(result.error);
-  //     }
-
-  //     if (!result.audio_url) {
-  //       throw new Error("No audio URL returned from server");
-  //     }
-
-  //     // Test audio availability before setting URL
-  //     try {
-  //       const audioTest = await fetch(result.audio_url);
-  //       if (!audioTest.ok) {
-  //         throw new Error(`Audio file not accessible: ${audioTest.status}`);
-  //       }
-  //     } catch (audioError) {
-  //       console.error("Audio file test failed:", audioError);
-  //       throw new Error("Generated audio file is not accessible");
-  //     }
-
-  //     console.log("Setting audio URL:", result.audio_url);
-
-  //     // Store audio data in appropriate state based on whether it's original or not
-  //     if (isOriginal) {
-  //       setOriginalAudioUrl(result.audio_url);
-  //       setOriginalTimestamps(result.word_timings || []);
-  //       setAudioUrl(result.audio_url);
-  //       setNarrationTimestamps(result.word_timings || []);
-  //     } else {
-  //       setAudioUrl(result.audio_url);
-  //       setNarrationTimestamps(result.word_timings || []);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error generating audio:", error);
-  //     console.error("Error details:", {
-  //       topic,
-  //       textLength: text?.length,
-  //       error: error.toString(),
-  //     });
-  //     if (isOriginal) {
-  //       setOriginalAudioUrl(null);
-  //       setOriginalTimestamps([]);
-  //     }
-  //     setAudioUrl(null);
-  //     setNarrationTimestamps([]);
-  //     // Show error to user
-  //     setNarration(
-  //       (prev) => prev + "\n\nError generating audio: " + error.message
-  //     );
-  //   }
-  // };
-
+  
   const generateNarrationAudio = async (text, isOriginal = false) => {
     try {
-      const result = await generateNarrationAudioAPI(text);
-  
+      setIsLoadingAudio(true);
+      const result = await generateNarrationAudioAPI(text, topic);
+
       console.log("Setting audio URL:", result.audio_url);
-  
+
+      const audioTest = new Audio(result.audio_url);
+      await new Promise((resolve, reject) => {
+        audioTest.onloadeddata = resolve; // Audio is ready
+        audioTest.onerror = () => reject(new Error("Audio failed to load"));
+        audioTest.load();
+      });
+
       if (isOriginal) {
         setOriginalAudioUrl(result.audio_url);
         setOriginalTimestamps(result.word_timings || []);
@@ -186,25 +125,39 @@ const VisualizationController = ({
         setAudioUrl(result.audio_url);
         setNarrationTimestamps(result.word_timings || []);
       }
+
+      setIsHighlightPlayButton(true); // Trigger highlight
+      if (playButtonRef.current) {
+        playButtonRef.current.focus(); // Focus the button
+      }
+
+      // Optionally remove highlight after a few seconds
+      setTimeout(() => setIsHighlightPlayButton(false), 5000);
+      
     } catch (error) {
       console.error("Error details:", {
         topic,
         textLength: text?.length,
         error: error.toString(),
       });
-  
+
       if (isOriginal) {
         setOriginalAudioUrl(null);
         setOriginalTimestamps([]);
       }
       setAudioUrl(null);
       setNarrationTimestamps([]);
-      setNarration((prev) => prev + "\n\nError generating audio: " + error.message);
+      setNarration(
+        (prev) => prev + "\n\nError generating audio: " + error.message
+      );
+    } finally {
+      setIsLoadingAudio(false); // Stop loading state
     }
   };
   const handlePlayPause = () => {
     if (!audioRef.current) return;
 
+    setIsHighlightPlayButton(false);
     if (isPlaying) {
       audioRef.current.pause();
       cancelAnimationFrame(animationFrameRef.current);
@@ -515,26 +468,6 @@ const VisualizationController = ({
     originalPlaybackPosition,
   ]);
 
-  
-  
-
-  const playSound = () => {
-    if (audioRef.current) {
-
-      audioRef.current.play();
-      setIsPlaying(true);
-      setIsVideoPlaying(true);
-    }
-  };
-
-  const pauseSound = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-      setIsVideoPlaying(false);
-    }
-  };
-
   return (
     <div className="visualization-controller ">
       <VisualizationComponent
@@ -543,15 +476,14 @@ const VisualizationController = ({
         ref={visualizationRef}
       />
 
-      {audioUrl && isVideoPlaying && (
+      {audioUrl && (
         <audio
           ref={audioRef}
           src={audioUrl}
           onEnded={handleAudioEnd}
           onError={handleAudioError}
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           controls
-         
         />
       )}
       <div className="absolute bottom-0 left-0 right-0 flex w-full p-2 items-center gap-2 my-2 z-30">
@@ -629,16 +561,18 @@ const VisualizationController = ({
             </div>
           </button>
           <button
-            className={`border border-[var(--Border-Secondary)] rounded-lg ${
-              isVideoPlaying ? "" : "bg-blue-500"
-            }  p-2 `}
-            onClick={() => {
-              // handleVideoPausing();
-              // handlePlayPause();
-              playSound();
-            }}
+          ref={playButtonRef}
+            className={`border border-[var(--Border-Secondary)] rounded-lg p-2 
+      ${isLoadingAudio ? "opacity-50 cursor-not-allowed" : ""} ${
+              isPlaying ? "" : "bg-blue-500"
+            } ${isHighlightPlayButton ? "animate-pulse border-red-500 shadow-[0_0_10px_#00ff00]" : ""}
+            `}
+            onClick={handlePlayPause}
+            disabled={isLoadingAudio} 
           >
-            {isVideoPlaying ? (
+            {isLoadingAudio ? (
+              <div className="loader border-4 border-t-transparent border-gray-300 rounded-full w-6 h-6 animate-spin"></div> 
+            ) : isPlaying ? (
               <MdPause size="1.3em" />
             ) : (
               <MdPlayArrow size="1.3em" />
