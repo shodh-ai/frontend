@@ -41,7 +41,6 @@ const VISUALIZATIONS = {
   // gis: GISVisualization
 };
 
-
 export default function RenderComponent({ handleSideTab, activeSideTab }) {
   const [topic, setTopic] = useState("shared_memory");
   const [data, setData] = useState(null);
@@ -57,39 +56,40 @@ export default function RenderComponent({ handleSideTab, activeSideTab }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-//   useEffect(() => {
-//     if (!topic) return;
+  //   useEffect(() => {
+  //     if (!topic) return;
 
-//     setLoading(true);
-//     setError(null);
+  //     setLoading(true);
+  //     setError(null);
 
-//     fetch(
-//       `${baseUrl}/api/visualization`,
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ topic }),
-//       }
-//     )
-//       .then((response) => response.json())
-//       .then((result) => {
-//         setData(result);
-//         setLoading(false);
-//       })
-//       .catch((err) => {
-//         setError(err.message);
-//         setLoading(false);
-//       });
-//   }, [topic]);
+  //     fetch(
+  //       `${baseUrl}/api/visualization`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ topic }),
+  //       }
+  //     )
+  //       .then((response) => response.json())
+  //       .then((result) => {
+  //         setData(result);
+  //         setLoading(false);
+  //       })
+  //       .catch((err) => {
+  //         setError(err.message);
+  //         setLoading(false);
+  //       });
+  //   }, [topic]);
 
-useEffect(() => {
+  useEffect(() => {
     if (!topic) return;
-  
+
     setLoading(true);
     setError(null);
-  
+    setData(null);
+
     fetchVisualizationAPI(topic)
       .then((result) => {
         setData(result);
@@ -304,9 +304,28 @@ useEffect(() => {
   }, [data]);
 
   const renderVisualization = () => {
+    if (loading) {
+        return (
+            <div className="h-full">
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+            <div className="loader flex flex-col items-center gap-2">
+              <div className="spinner border-4 border-t-blue-500 border-gray-200 rounded-full w-7 h-7 animate-spin"></div>
+              <span className="text-white text-lg">Loading Visualization...</span>
+            </div>
+          </div>
+          </div>
+        );
+      }
+
+      if (error) {
+        return (
+          <div className="error-container flex items-center justify-center h-full text-red-500">
+            Error: {error}
+          </div>
+        );
+      }
     if (!data || !topic) return null;
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+
 
     // Use VisualizationController for shared memory and shared disk visualizations
     if (
