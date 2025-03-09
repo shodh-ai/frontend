@@ -19,7 +19,9 @@ import SharedMemoryVisualization from "./SharedMemoryLocation";
 // import MobiledbVisualization from './MobiledbVisualization';
 // import GISVisualization from './GisVisualization';
 import VisualizationController from "./VisualizationController";
+import { useDispatch } from "react-redux";
 import { fetchVisualizationAPI } from "@/src/services/teachingapi";
+import { setTeachingTopic } from "@/src/features/studentTeaching/studentTeachingSlice";
 
 // Define the VISUALIZATIONS object
 const VISUALIZATIONS = {
@@ -41,7 +43,7 @@ const VISUALIZATIONS = {
   // gis: GISVisualization
 };
 
-export default function RenderComponent({ handleSideTab, activeSideTab }) {
+export default function RenderComponent({ currentTopic,handleSideTab, activeSideTab }) {
   const [topic, setTopic] = useState("shared_memory");
   const [data, setData] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -55,6 +57,7 @@ export default function RenderComponent({ handleSideTab, activeSideTab }) {
   const startTimeRef = useRef(0);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const dispatch  = useDispatch();
 
   //   useEffect(() => {
   //     if (!topic) return;
@@ -92,6 +95,7 @@ export default function RenderComponent({ handleSideTab, activeSideTab }) {
 
     fetchVisualizationAPI(topic)
       .then((result) => {
+        dispatch(setTeachingTopic(result))
         setData(result);
         setLoading(false);
       })
@@ -100,44 +104,44 @@ export default function RenderComponent({ handleSideTab, activeSideTab }) {
         setLoading(false);
       });
   }, [topic]);
-  const handleTopicChange = (e) => {
-    setTopic(e.target.value);
-  };
+//   const handleTopicChange = (e) => {
+//     setTopic(e.target.value);
+//   };
 
-  const handleDoubtSubmit = async (doubt) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/process-doubt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ doubt, topic }),
-      });
+//   const handleDoubtSubmit = async (doubt) => {
+//     setLoading(true);
+//     setError(null);
+//     try {
+//       const response = await fetch("/api/process-doubt", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ doubt, topic }),
+//       });
 
-      if (!response.ok) {
-        throw new Error("Failed to process doubt");
-      }
+//       if (!response.ok) {
+//         throw new Error("Failed to process doubt");
+//       }
 
-      const result = await response.json();
-      // Extract the narration text from the response
-      const narrationText =
-        typeof result.narration === "string"
-          ? result.narration
-          : result.narration?.explanation || "No explanation available";
+//       const result = await response.json();
+//       // Extract the narration text from the response
+//       const narrationText =
+//         typeof result.narration === "string"
+//           ? result.narration
+//           : result.narration?.explanation || "No explanation available";
 
-      setNarration(narrationText);
-      if (result.highlightedElements) {
-        setActiveHighlights(new Set(result.highlightedElements));
-      }
-    } catch (err) {
-      setError("Failed to process your doubt. Please try again.");
-      console.error("Error processing doubt:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+//       setNarration(narrationText);
+//       if (result.highlightedElements) {
+//         setActiveHighlights(new Set(result.highlightedElements));
+//       }
+//     } catch (err) {
+//       setError("Failed to process your doubt. Please try again.");
+//       console.error("Error processing doubt:", err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
   const handleNodeClick = (nodeId) => {
     console.log("Clicked node:", nodeId);
