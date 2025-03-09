@@ -59,33 +59,6 @@ export default function RenderComponent({ currentTopic,handleSideTab, activeSide
   const [loading, setLoading] = useState(false);
   const dispatch  = useDispatch();
 
-  //   useEffect(() => {
-  //     if (!topic) return;
-
-  //     setLoading(true);
-  //     setError(null);
-
-  //     fetch(
-  //       `${baseUrl}/api/visualization`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ topic }),
-  //       }
-  //     )
-  //       .then((response) => response.json())
-  //       .then((result) => {
-  //         setData(result);
-  //         setLoading(false);
-  //       })
-  //       .catch((err) => {
-  //         setError(err.message);
-  //         setLoading(false);
-  //       });
-  //   }, [topic]);
-
   useEffect(() => {
     if (!topic) return;
 

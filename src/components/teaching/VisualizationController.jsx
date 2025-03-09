@@ -39,6 +39,7 @@ const VisualizationController = ({
   const [relatedConcepts, setRelatedConcepts] = useState([]);
   const [showingExample, setShowingExample] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [storeData, setStoreData] = useState(true);
 
   const visualizationRef = useRef(null);
   const audioRef = useRef(null);
@@ -46,6 +47,8 @@ const VisualizationController = ({
   const animationFrameRef = useRef(null);
 
   const [showPopup, setShowPopup] = useState(false);
+  const [doubtState, setDoubtState] = useState(false);
+  const [processingDoubt, setProcessingDoubt] = useState(false);
 
   const showContinuePopup = () => {
     setShowPopup(true);
@@ -55,6 +58,8 @@ const VisualizationController = ({
     setIsRecording(!isRecording);
   };
 
+
+  
   // Initialize narration from data prop
   useEffect(() => {
     const loadNarration = async () => {
@@ -78,15 +83,28 @@ const VisualizationController = ({
         audioTest.onerror = () => reject(new Error("Audio failed to load"));
         audioTest.load();
       });
+      // try {
+      //   const response = await fetch(result.audio_url);
+      //   if (!response.ok) throw new Error("Failed to fetch audio file");
+      //   const blob = await response.blob();
+      //   const audioUrl = URL.createObjectURL(blob);
+      //   const audioTest = new Audio(audioUrl);
+      //   audioTest.onloadeddata = () => console.log("Audio loaded from blob");
+      //   audioTest.onerror = () => console.error("Blob audio failed to load");
+      //   audioTest.load();
+      // } catch (error) {
+      //   console.error("Error loading audio via fetch:", error);
+      // }
 
       if (isOriginal) {
-        setOriginalAudioUrl(result.audio_url);
-        setOriginalTimestamps(result.word_timings || []);
+        setOriginalAudioUrl(result?.audio_url);
+        setOriginalTimestamps(result?.word_timings || []);
         setAudioUrl(result.audio_url);
-        setNarrationTimestamps(result.word_timings || []);
+        setNarrationTimestamps(result?.word_timings || []);
       } else {
-        setAudioUrl(result.audio_url);
-        setNarrationTimestamps(result.word_timings || []);
+        setAudioUrl(result?.audio_url);
+        setOriginalTimestamps(result?.word_timings || []);
+        setNarrationTimestamps(result?.word_timings || []);
       }
 
       setIsHighlightPlayButton(true); // Trigger highlight
@@ -126,6 +144,9 @@ const VisualizationController = ({
       // Store current position if playing original narration
       if (isOriginalNarration) {
         setOriginalPlaybackPosition(audioRef.current.currentTime * 1000);
+      }
+      if(doubtState){
+        showContinuePopup();
       }
     } else {
       // If returning to original narration, set the time to stored position
@@ -256,16 +277,22 @@ const VisualizationController = ({
 
   const handleContinueLecture = async (continueLecture) => {
     setShowPopup(false);
+    
     if (continueLecture) {
       const storedData = JSON.parse(localStorage.getItem("currentTopic"));
-      if (storedData && storedData.audioUrl && storedData.pauseTime && storedData.timestamps) {
+      if (
+        storedData &&
+        storedData.audioUrl &&
+        storedData.pauseTime &&
+        storedData.timestamps
+      ) {
         // Set states with stored data
         setAudioUrl(storedData.audioUrl);
         setIsOriginalNarration(true);
         setNarration(originalNarration); // Restore original narration text
         setNarrationTimestamps(storedData.timestamps); // Restore timestamps from localStorage
         setOriginalTimestamps(storedData.timestamps); // Optionally update originalTimestamps too
-  
+
         // Validate audio URL and resume playback
         const audioTest = new Audio(storedData.audioUrl);
         try {
@@ -274,7 +301,7 @@ const VisualizationController = ({
             audioTest.onerror = () => reject(new Error("Audio URL invalid"));
             audioTest.load();
           });
-  
+
           setTimeout(() => {
             if (audioRef.current) {
               audioRef.current.currentTime = storedData.pauseTime / 1000; // Set to stored time in seconds
@@ -318,13 +345,20 @@ const VisualizationController = ({
   };
 
   const handleDoubtSubmission = async (doubt) => {
+    
     try {
-      if (isOriginalNarration && audioRef.current) {
+      if (isOriginalNarration && audioRef.current && storeData) {
+        setDoubtState(true);
         const pauseTime = audioRef.current.currentTime * 1000; // Store in milliseconds
         localStorage.setItem(
           "currentTopic",
-          JSON.stringify({ pauseTime, audioUrl,timestamps: originalTimestamps })
+          JSON.stringify({
+            pauseTime,
+            audioUrl,
+            timestamps: originalTimestamps,
+          })
         );
+        setStoreData(false);
       }
 
       if (isPlaying && isOriginalNarration && audioRef.current) {
@@ -332,6 +366,8 @@ const VisualizationController = ({
         audioRef.current.pause();
         setIsPlaying(false);
       }
+
+      setCurrentSubtitle(content);
 
       setNarration("Processing your question...");
 
@@ -352,12 +388,14 @@ const VisualizationController = ({
           properties: node.properties || node.columns,
         }));
 
+        setProcessingDoubt(true);
       const result = await processDoubtAPI(
         doubt,
         topic,
         currentState,
         relevantNodes
       );
+      setProcessingDoubt(false);
 
       if (result.error) {
         throw new Error(result.error);
@@ -432,6 +470,7 @@ const VisualizationController = ({
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleDoubtSubmission(content);
+      
       setContent("");
     }
   };
@@ -512,7 +551,21 @@ const VisualizationController = ({
     return formatted;
   };
 
+if (processingDoubt) {
+        return (
+            <div className="h-full">
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+            <div className="loader flex flex-col items-center gap-2">
+              <div className="spinner border-4 border-t-blue-500 border-gray-200 rounded-full w-7 h-7 animate-spin"></div>
+              <span className="text-white text-lg">Processing Doubts...</span>
+            </div>
+          </div>
+          </div>
+        );
+      }
+
   return (
+    
     <div className="visualization-controller ">
       <VisualizationComponent
         data={data}
@@ -566,7 +619,7 @@ const VisualizationController = ({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            backgroundColor: "white",
+            backgroundColor: "black",
             padding: "20px",
             borderRadius: "8px",
             boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
@@ -576,7 +629,7 @@ const VisualizationController = ({
           <p>Do you want to continue the lecture from where you left off?</p>
           <div style={{ marginTop: "10px" }}>
             <button
-              onClick={() => handleContinueLecture(true)}
+              onClick={() => {handleContinueLecture(true);setDoubtState(false);}}
               style={{
                 marginRight: "10px",
                 padding: "8px 16px",
@@ -590,7 +643,7 @@ const VisualizationController = ({
               Yes
             </button>
             <button
-              onClick={() => handleContinueLecture(false)}
+              onClick={() => setShowPopup(false)}
               style={{
                 padding: "8px 16px",
                 backgroundColor: "#f44336",
