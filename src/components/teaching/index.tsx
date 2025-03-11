@@ -372,9 +372,9 @@ const Teaching: React.FC = () => {
     <div className="h-full flex gap-3 w-full p-8">
       {activeSideTab != -1 && (
         <div className="border flex flex-col gap-3 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white w-full max-w-[300px]">
-          {activeSideTab === 0 ? (
+          {/* {activeSideTab === 0 ? (
             <KnowledgeGraphMain setActiveSideTab={setActiveSideTab} />
-          ) : activeSideTab === 1 ? (
+          ) : activeSideTab === 1 ? ( */}
             <NotesOverlay
              
               // setIsFileModalOpen={setIsFileModalOpen}
@@ -383,7 +383,7 @@ const Teaching: React.FC = () => {
               setConversationHistory={setConversationHistory}
               setActiveSideTab={setActiveSideTab}
             />
-           ) : null} 
+           {/* ) : null}  */}
         </div>
       )}
       

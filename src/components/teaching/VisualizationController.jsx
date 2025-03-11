@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MdClose, MdMicNone, MdPause, MdPlayArrow } from "react-icons/md";
 import * as d3 from "d3";
-import { generateNarrationAudioAPI, processDoubtAPI } from "@/src/services/teachingapi";
+import {
+  generateNarrationAudioAPI,
+  processDoubtAPI,
+} from "@/src/services/teachingapi";
 import Image from "next/image";
 
 const VisualizationController = ({
@@ -36,57 +39,72 @@ const VisualizationController = ({
   const [relatedConcepts, setRelatedConcepts] = useState([]);
   const [showingExample, setShowingExample] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [storeData, setStoreData] = useState(true);
 
   const visualizationRef = useRef(null);
   const audioRef = useRef(null);
   const playButtonRef = useRef(null);
   const animationFrameRef = useRef(null);
 
-  
+  const [showPopup, setShowPopup] = useState(false);
+  const [doubtState, setDoubtState] = useState(false);
+  const [processingDoubt, setProcessingDoubt] = useState(false);
+
+  const showContinuePopup = () => {
+    setShowPopup(true);
+  };
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
   };
 
 
+  
   // Initialize narration from data prop
   useEffect(() => {
-
-      const loadNarration = async () => {
-        if (data?.narration) {
-          setNarration(data.narration);
-          setOriginalNarration(data.narration);
-          setIsOriginalNarration(true);
-          await generateNarrationAudio(data.narration, false); // Wait for audio generation
-        }
-      };
-      loadNarration();
-    
+    const loadNarration = async () => {
+      if (data?.narration) {
+        setNarration(data.narration);
+        setOriginalNarration(data.narration);
+        setIsOriginalNarration(true);
+        await generateNarrationAudio(data.narration, false); // Wait for audio generation
+      }
+    };
+    loadNarration();
   }, [data]);
 
-  
   const generateNarrationAudio = async (text, isOriginal = false) => {
     try {
       setIsLoadingAudio(true);
       const result = await generateNarrationAudioAPI(text, topic);
-
-      console.log("Setting audio URL:", result.audio_url);
-
       const audioTest = new Audio(result.audio_url);
       await new Promise((resolve, reject) => {
         audioTest.onloadeddata = resolve; // Audio is ready
         audioTest.onerror = () => reject(new Error("Audio failed to load"));
         audioTest.load();
       });
+      // try {
+      //   const response = await fetch(result.audio_url);
+      //   if (!response.ok) throw new Error("Failed to fetch audio file");
+      //   const blob = await response.blob();
+      //   const audioUrl = URL.createObjectURL(blob);
+      //   const audioTest = new Audio(audioUrl);
+      //   audioTest.onloadeddata = () => console.log("Audio loaded from blob");
+      //   audioTest.onerror = () => console.error("Blob audio failed to load");
+      //   audioTest.load();
+      // } catch (error) {
+      //   console.error("Error loading audio via fetch:", error);
+      // }
 
       if (isOriginal) {
-        setOriginalAudioUrl(result.audio_url);
-        setOriginalTimestamps(result.word_timings || []);
+        setOriginalAudioUrl(result?.audio_url);
+        setOriginalTimestamps(result?.word_timings || []);
         setAudioUrl(result.audio_url);
-        setNarrationTimestamps(result.word_timings || []);
+        setNarrationTimestamps(result?.word_timings || []);
       } else {
-        setAudioUrl(result.audio_url);
-        setNarrationTimestamps(result.word_timings || []);
+        setAudioUrl(result?.audio_url);
+        setOriginalTimestamps(result?.word_timings || []);
+        setNarrationTimestamps(result?.word_timings || []);
       }
 
       setIsHighlightPlayButton(true); // Trigger highlight
@@ -96,7 +114,6 @@ const VisualizationController = ({
 
       // Optionally remove highlight after a few seconds
       setTimeout(() => setIsHighlightPlayButton(false), 5000);
-      
     } catch (error) {
       console.error("Error details:", {
         topic,
@@ -127,6 +144,9 @@ const VisualizationController = ({
       // Store current position if playing original narration
       if (isOriginalNarration) {
         setOriginalPlaybackPosition(audioRef.current.currentTime * 1000);
+      }
+      if(doubtState){
+        showContinuePopup();
       }
     } else {
       // If returning to original narration, set the time to stored position
@@ -169,11 +189,9 @@ const VisualizationController = ({
     }
     updateSubtitles(currentTime);
 
-
     // Continue animation loop
     animationFrameRef.current = requestAnimationFrame(updateHighlights);
   };
-
 
   const updateSubtitles = (currentTime) => {
     if (!narrationTimestamps.length) {
@@ -190,7 +208,10 @@ const VisualizationController = ({
       if (currentTime >= timing.start_time && currentTime <= timing.end_time) {
         // Find the start of the phrase (backtrack to previous sentence boundary)
         startIdx = i;
-        while (startIdx > 0 && !/[.!?]/.test(narrationTimestamps[startIdx - 1].word)) {
+        while (
+          startIdx > 0 &&
+          !/[.!?]/.test(narrationTimestamps[startIdx - 1].word)
+        ) {
           startIdx--;
         }
 
@@ -209,7 +230,7 @@ const VisualizationController = ({
   };
 
   // Add cleanup for highlights when audio ends or errors
-  
+
   const handleAudioEnd = () => {
     setIsPlaying(false);
     setHighlightedElements([]);
@@ -223,7 +244,6 @@ const VisualizationController = ({
     setHighlightedElements([]); // Clear highlights on error
     // Attempt to regenerate audio
     if (narration) {
-      console.log("Attempting to regenerate audio...");
       generateNarrationAudio(narration);
     }
   };
@@ -255,241 +275,209 @@ const VisualizationController = ({
     }
   };
 
-  // const handleDoubtSubmission = async (doubt) => {
-  //   try {
-  //     if (isPlaying && isOriginalNarration && audioRef.current) {
-  //       setOriginalPlaybackPosition(audioRef.current.currentTime * 1000);
-  //       audioRef.current.pause();
-  //       setIsPlaying(false);
-  //     }
+  const handleContinueLecture = async (continueLecture) => {
+    setShowPopup(false);
+    
+    if (continueLecture) {
+      const storedData = JSON.parse(localStorage.getItem("currentTopic"));
+      if (
+        storedData &&
+        storedData.audioUrl &&
+        storedData.pauseTime &&
+        storedData.timestamps
+      ) {
+        // Set states with stored data
+        setAudioUrl(storedData.audioUrl);
+        setIsOriginalNarration(true);
+        setNarration(originalNarration); // Restore original narration text
+        setNarrationTimestamps(storedData.timestamps); // Restore timestamps from localStorage
+        setOriginalTimestamps(storedData.timestamps); // Optionally update originalTimestamps too
 
-  //     setNarration("Processing your question...");
+        // Validate audio URL and resume playback
+        const audioTest = new Audio(storedData.audioUrl);
+        try {
+          await new Promise((resolve, reject) => {
+            audioTest.onloadeddata = resolve; // Audio is ready
+            audioTest.onerror = () => reject(new Error("Audio URL invalid"));
+            audioTest.load();
+          });
 
-  //     const response = await fetch("https://d259-2401-4900-8821-9282-e9fd-ea41-8b61-864d.ngrok-free.app/api/process-doubt", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         doubt,
-  //         topic,
-  //         currentState: {
-  //           data,
-  //           highlightedElements,
-  //           currentTime: audioRef.current?.currentTime * 1000 || 0,
-  //           isOriginalNarration,
-  //           currentNarration: narration,
-  //         },
-  //         relevantNodes: data.nodes
-  //           .filter((node) => highlightedElements.some((h) => h.id === node.id))
-  //           .map((node) => ({
-  //             id: node.id,
-  //             name: node.name,
-  //             type: node.type,
-  //             properties: node.properties || node.columns,
-  //           })),
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json();
-  //       throw new Error(errorData.detail || `Server error: ${response.status}`);
-  //     }
-
-  //     const result = await response.json();
-
-  //     if (result.error) {
-  //       throw new Error(result.error);
-  //     }
-
-  //     // Try to parse the response if it's a string
-  //     let parsedResult = result;
-  //     if (typeof result === "string") {
-  //       try {
-  //         parsedResult = JSON.parse(result);
-  //       } catch (e) {
-  //         console.warn("Could not parse response as JSON, using as-is");
-  //         parsedResult = { explanation: result };
-  //       }
-  //     }
-
-  //     // Format the response for better readability
-  //     let formattedNarration = "";
-
-  //     // Add the question for context
-  //     formattedNarration += `Q: ${doubt}\n\n`;
-
-  //     // Add the main explanation
-  //     if (parsedResult.explanation) {
-  //       formattedNarration += parsedResult.explanation + "\n\n";
-  //     }
-
-  //     // Add any additional context or related information
-  //     if (parsedResult.additionalInfo) {
-  //       formattedNarration += parsedResult.additionalInfo + "\n\n";
-  //     }
-
-  //     // Add component details with improved formatting
-  //     if (parsedResult.componentDetails) {
-  //       formattedNarration += "Key Components:\n";
-  //       Object.entries(parsedResult.componentDetails).forEach(
-  //         ([key, value]) => {
-  //           formattedNarration += `• ${key}: ${
-  //             typeof value === "string" ? value : value.description
-  //           }\n`;
-  //         }
-  //       );
-  //       formattedNarration += "\n";
-  //     }
-
-  //     // Add examples section
-  //     if (parsedResult.examples?.length) {
-  //       formattedNarration += "Examples:\n";
-  //       parsedResult.examples.forEach((example, i) => {
-  //         formattedNarration += `${i + 1}. ${example}\n`;
-  //       });
-  //       formattedNarration += "\n";
-  //     }
-
-  //     // Add recommendations section
-  //     if (parsedResult.recommendations?.length) {
-  //       formattedNarration += "Recommendations:\n";
-  //       parsedResult.recommendations.forEach((rec) => {
-  //         formattedNarration += `• ${rec}\n`;
-  //       });
-  //     }
-
-  //     setNarration(formattedNarration);
-  //     setIsOriginalNarration(false);
-
-  //     if (parsedResult.highlightElements) {
-  //       setHighlightedElements(parsedResult.highlightElements);
-  //     }
-
-  //     if (formattedNarration) {
-  //       generateNarrationAudio(formattedNarration, false);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error processing doubt:", error);
-  //     setNarration(
-  //       `I apologize, but I encountered an error while processing your question:\n${error.message}\n\nPlease try rephrasing your question or ask about a different aspect of the topic.`
-  //     );
-  //     setIsOriginalNarration(false);
-  //   }
-  // };
-
-
-const handleDoubtSubmission = async (doubt) => {
-  try {
-    if (isPlaying && isOriginalNarration && audioRef.current) {
-      setOriginalPlaybackPosition(audioRef.current.currentTime * 1000);
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
-
-    setNarration("Processing your question...");
-
-    const currentState = {
-      data,
-      highlightedElements,
-      currentTime: audioRef.current?.currentTime * 1000 || 0,
-      isOriginalNarration,
-      currentNarration: narration,
-    };
-
-    const relevantNodes = data.nodes
-      .filter((node) => highlightedElements.some((h) => h.id === node.id))
-      .map((node) => ({
-        id: node.id,
-        name: node.name,
-        type: node.type,
-        properties: node.properties || node.columns,
-      }));
-
-    const result = await processDoubtAPI(doubt, topic, currentState, relevantNodes);
-
-    if (result.error) {
-      throw new Error(result.error);
-    }
-
-    let parsedResult = result;
-    if (typeof result === "string") {
-      try {
-        parsedResult = JSON.parse(result);
-      } catch (e) {
-        console.warn("Could not parse response as JSON, using as-is");
-        parsedResult = { explanation: result };
-      }
-    }
-
-    let formattedNarration = `Q: ${doubt}\n\n`;
-
-    if (parsedResult.explanation) {
-      formattedNarration += parsedResult.explanation + "\n\n";
-    }
-
-    if (parsedResult.additionalInfo) {
-      formattedNarration += parsedResult.additionalInfo + "\n\n";
-    }
-
-    if (parsedResult.componentDetails) {
-      formattedNarration += "Key Components:\n";
-      Object.entries(parsedResult.componentDetails).forEach(
-        ([key, value]) => {
-          formattedNarration += `• ${key}: ${
-            typeof value === "string" ? value : value.description
-          }\n`;
+          setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.currentTime = storedData.pauseTime / 1000; // Set to stored time in seconds
+              audioRef.current.play().catch((err) => {
+                console.error("Playback error:", err);
+                generateNarrationAudio(originalNarration, true); // Fallback
+              });
+              setIsPlaying(true);
+              updateHighlights(); // Resume highlight updates
+            }
+          }, 100);
+        } catch (error) {
+          console.error("Stored audio URL is invalid:", error);
+          // Fallback: Regenerate audio and timestamps
+          await generateNarrationAudio(originalNarration, true);
+          setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.currentTime = storedData.pauseTime / 1000;
+              audioRef.current.play();
+              setIsPlaying(true);
+              updateHighlights();
+            }
+          }, 100);
         }
-      );
-      formattedNarration += "\n";
-    }
-
-    if (parsedResult.examples?.length) {
-      formattedNarration += "Examples:\n";
-      parsedResult.examples.forEach((example, i) => {
-        formattedNarration += `${i + 1}. ${example}\n`;
-      });
-      formattedNarration += "\n";
-    }
-
-    if (parsedResult.recommendations?.length) {
-      formattedNarration += "Recommendations:\n";
-      parsedResult.recommendations.forEach((rec) => {
-        formattedNarration += `• ${rec}\n`;
-      });
-    }
-
-    setNarration(formattedNarration);
-    setIsOriginalNarration(false);
-
-    if (parsedResult.highlightElements) {
-      setHighlightedElements(parsedResult.highlightElements);
-    }
-
-    if (formattedNarration) {
-      generateNarrationAudio(formattedNarration, false);
-    }
-  } catch (error) {
-    console.error("Error processing doubt:", error);
-    setNarration(
-      `I encountered an error while processing your question:\n${error.message}\n\nPlease try rephrasing your question or ask about a different aspect of the topic.`
-    );
-    setIsOriginalNarration(false);
-  }
-};
-
-  
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleDoubtSubmission(content);
-      setContent("")
+      } else {
+        // If stored data is incomplete, regenerate everything
+        console.warn("Stored data incomplete, regenerating audio...");
+        await generateNarrationAudio(originalNarration, true);
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.currentTime = (storedData?.pauseTime || 0) / 1000;
+            audioRef.current.play();
+            setIsPlaying(true);
+            updateHighlights();
+          }
+        }, 100);
+      }
+    } else {
+      localStorage.removeItem("currentTopic");
     }
   };
 
-  const handleChange = (e)=>{
-    setContent(e);
-  }
+  const handleDoubtSubmission = async (doubt) => {
+    
+    try {
+      if (isOriginalNarration && audioRef.current && storeData) {
+        setDoubtState(true);
+        const pauseTime = audioRef.current.currentTime * 1000; // Store in milliseconds
+        localStorage.setItem(
+          "currentTopic",
+          JSON.stringify({
+            pauseTime,
+            audioUrl,
+            timestamps: originalTimestamps,
+          })
+        );
+        setStoreData(false);
+      }
 
+      if (isPlaying && isOriginalNarration && audioRef.current) {
+        setOriginalPlaybackPosition(audioRef.current.currentTime * 1000);
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+
+      setCurrentSubtitle(content);
+
+      setNarration("Processing your question...");
+
+      const currentState = {
+        data,
+        highlightedElements,
+        currentTime: audioRef.current?.currentTime * 1000 || 0,
+        isOriginalNarration,
+        currentNarration: narration,
+      };
+
+      const relevantNodes = data.nodes
+        .filter((node) => highlightedElements.some((h) => h.id === node.id))
+        .map((node) => ({
+          id: node.id,
+          name: node.name,
+          type: node.type,
+          properties: node.properties || node.columns,
+        }));
+
+        setProcessingDoubt(true);
+      const result = await processDoubtAPI(
+        doubt,
+        topic,
+        currentState,
+        relevantNodes
+      );
+      setProcessingDoubt(false);
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      let parsedResult = result;
+      if (typeof result === "string") {
+        try {
+          parsedResult = JSON.parse(result);
+        } catch (e) {
+          console.warn("Could not parse response as JSON, using as-is");
+          parsedResult = { explanation: result };
+        }
+      }
+
+      let formattedNarration = `Q: ${doubt}\n\n`;
+
+      if (parsedResult.explanation) {
+        formattedNarration += parsedResult.explanation + "\n\n";
+      }
+
+      if (parsedResult.additionalInfo) {
+        formattedNarration += parsedResult.additionalInfo + "\n\n";
+      }
+
+      if (parsedResult.componentDetails) {
+        formattedNarration += "Key Components:\n";
+        Object.entries(parsedResult.componentDetails).forEach(
+          ([key, value]) => {
+            formattedNarration += `• ${key}: ${
+              typeof value === "string" ? value : value.description
+            }\n`;
+          }
+        );
+        formattedNarration += "\n";
+      }
+
+      if (parsedResult.examples?.length) {
+        formattedNarration += "Examples:\n";
+        parsedResult.examples.forEach((example, i) => {
+          formattedNarration += `${i + 1}. ${example}\n`;
+        });
+        formattedNarration += "\n";
+      }
+
+      if (parsedResult.recommendations?.length) {
+        formattedNarration += "Recommendations:\n";
+        parsedResult.recommendations.forEach((rec) => {
+          formattedNarration += `• ${rec}\n`;
+        });
+      }
+
+      setNarration(formattedNarration);
+      setIsOriginalNarration(false);
+
+      if (parsedResult.highlightElements) {
+        setHighlightedElements(parsedResult.highlightElements);
+      }
+
+      if (formattedNarration) {
+        generateNarrationAudio(formattedNarration, false);
+      }
+    } catch (error) {
+      console.error("Error processing doubt:", error);
+      setNarration(
+        `I encountered an error while processing your question:\n${error.message}\n\nPlease try rephrasing your question or ask about a different aspect of the topic.`
+      );
+      setIsOriginalNarration(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleDoubtSubmission(content);
+      
+      setContent("");
+    }
+  };
+
+  const handleChange = (e) => {
+    setContent(e);
+  };
 
   // Add components for enhanced features
   // const renderInteractiveElements = () => {
@@ -563,27 +551,21 @@ const handleDoubtSubmission = async (doubt) => {
     return formatted;
   };
 
-  // Add debug logging for render
-  useEffect(() => {
-    console.log("Current state:", {
-      hasNarration: Boolean(narration),
-      hasAudioUrl: Boolean(audioUrl),
-      isOriginalNarration,
-      originalPlaybackPosition,
-      audioUrl,
-      isPlaying,
-    });
-  }, [
-    narration,
-    audioUrl,
-    isPlaying,
-    isOriginalNarration,
-    originalPlaybackPosition,
-  ]);
-
-  console.log("111", content);
+if (processingDoubt) {
+        return (
+            <div className="h-full">
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+            <div className="loader flex flex-col items-center gap-2">
+              <div className="spinner border-4 border-t-blue-500 border-gray-200 rounded-full w-7 h-7 animate-spin"></div>
+              <span className="text-white text-lg">Processing Doubts...</span>
+            </div>
+          </div>
+          </div>
+        );
+      }
 
   return (
+    
     <div className="visualization-controller ">
       <VisualizationComponent
         data={data}
@@ -627,6 +609,53 @@ const handleDoubtSubmission = async (doubt) => {
           }}
         >
           {currentSubtitle}
+        </div>
+      )}
+
+      {showPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "black",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            zIndex: 50,
+          }}
+        >
+          <p>Do you want to continue the lecture from where you left off?</p>
+          <div style={{ marginTop: "10px" }}>
+            <button
+              onClick={() => {handleContinueLecture(true);setDoubtState(false);}}
+              style={{
+                marginRight: "10px",
+                padding: "8px 16px",
+                backgroundColor: "#4CAF50",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => setShowPopup(false)}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#f44336",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              No
+            </button>
+          </div>
         </div>
       )}
       <div className="absolute bottom-0 left-0 right-0 flex w-full p-2 items-center gap-2 my-2 z-30">
@@ -683,7 +712,10 @@ const handleDoubtSubmission = async (doubt) => {
             alt="image"
             height={32}
             width={32}
-            onClick={()=>{handleDoubtSubmission(content);setContent("")}}
+            onClick={() => {
+              handleDoubtSubmission(content);
+              setContent("");
+            }}
           />
         </div>
         <div className="flex gap-2">
@@ -704,17 +736,21 @@ const handleDoubtSubmission = async (doubt) => {
             </div>
           </button>
           <button
-          ref={playButtonRef}
+            ref={playButtonRef}
             className={`border border-[var(--Border-Secondary)] rounded-lg p-2 
       ${isLoadingAudio ? "opacity-50 cursor-not-allowed" : ""} ${
               isPlaying ? "" : "bg-blue-500"
-            } ${isHighlightPlayButton ? "animate-pulse border-red-500 shadow-[0_0_10px_#00ff00]" : ""}
+            } ${
+              isHighlightPlayButton
+                ? "animate-pulse border-red-500 shadow-[0_0_10px_#00ff00]"
+                : ""
+            }
             `}
             onClick={handlePlayPause}
-            disabled={isLoadingAudio} 
+            disabled={isLoadingAudio}
           >
             {isLoadingAudio ? (
-              <div className="loader border-4 border-t-transparent border-gray-300 rounded-full w-6 h-6 animate-spin"></div> 
+              <div className="loader border-4 border-t-transparent border-gray-300 rounded-full w-6 h-6 animate-spin"></div>
             ) : isPlaying ? (
               <MdPause size="1.3em" />
             ) : (
