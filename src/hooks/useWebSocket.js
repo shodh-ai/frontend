@@ -1,58 +1,95 @@
-// // src/hooks/useWebSocket.js
+// // src/hooks/useSocketIO.js
 // import { useEffect, useRef, useState } from 'react';
+// import { io } from 'socket.io-client';
 
-// const useWebSocket = (topic) => {
-//   const [messages, setMessages] = useState([]); 
+// const useSocketIO = (baseUrl) => {
+//   const [messages, setMessages] = useState([]); // Text, status, errors
+//   const [responseData, setResponseData] = useState(null); // Complete AI response
+//   const [wordTimings, setWordTimings] = useState([]); // Timing data
+//   const [audioBlob, setAudioBlob] = useState(null); // Combined audio
 //   const [isConnected, setIsConnected] = useState(false);
-//   const wsRef = useRef(null);
+//   const socketRef = useRef(null);
+//   const audioChunksRef = useRef([]);
+//   const audioContentTypeRef = useRef('audio/mpeg'); // Default
 
 //   useEffect(() => {
-//     const url = `ws://localhost:8000/ws/narration/${topic}`; 
-//     wsRef.current = new WebSocket(url);
+//     socketRef.current = io(baseUrl, { transports: ['websocket'] });
 
-//     wsRef.current.onopen = () => {
-//       console.log('WebSocket connected');
+//     socketRef.current.on('connect', () => {
+//       console.log('Socket.IO connected');
 //       setIsConnected(true);
-//     };
+//       setMessages((prev) => [...prev, { type: 'status', data: 'Connected to server' }]);
+//     });
 
-//     wsRef.current.onmessage = (event) => {
-//       if (event.data instanceof Blob) {
-//         // Handle audio chunks
-//         setMessages((prev) => [...prev, { type: 'audio', data: event.data }]);
-//       } else {
-//         // Handle JSON messages
-//         const data = JSON.parse(event.data);
-//         setMessages((prev) => [...prev, data]);
+//     socketRef.current.on('status', (status) => {
+//       setMessages((prev) => [...prev, { type: 'status', data: status.message }]);
+//     });
+
+//     socketRef.current.on('text_chunk', (chunk) => {
+//       setMessages((prev) => [...prev, { type: 'text', data: chunk }]);
+//     });
+
+//     socketRef.current.on('response_data', (data) => {
+//       setResponseData(data);
+//     });
+
+//     socketRef.current.on('timing', (timingData) => {
+//       setWordTimings(timingData);
+//     });
+
+//     socketRef.current.on('audio_header', (headerInfo) => {
+//       audioChunksRef.current = []; // Reset chunks
+//       audioContentTypeRef.current = headerInfo.content_type || 'audio/mpeg';
+//     });
+
+//     socketRef.current.on('audio_chunk', (chunk) => {
+//       audioChunksRef.current.push(chunk); // Buffer chunks
+//       console.log('Received audio chunk, total:', audioChunksRef.current.length);
+//     });
+
+//     socketRef.current.on('end', (data) => {
+//       if (audioChunksRef.current.length > 0) {
+//         const audioBlob = new Blob(audioChunksRef.current, { type: audioContentTypeRef.current });
+//         setAudioBlob(audioBlob);
+//         audioChunksRef.current = []; // Reset
 //       }
-//     };
+//       setMessages((prev) => [...prev, { type: 'end', data: data.message }]);
+//     });
 
-//     wsRef.current.onerror = (error) => {
-//       console.error('WebSocket error:', error);
-//     };
+//     socketRef.current.on('error', (error) => {
+//       setMessages((prev) => [...prev, { type: 'error', data: error.message }]);
+//     });
 
-//     wsRef.current.onclose = () => {
-//       console.log('WebSocket disconnected');
+//     socketRef.current.on('disconnect', () => {
+//       console.log('Socket.IO disconnected');
 //       setIsConnected(false);
-//     };
+//       setMessages((prev) => [...prev, { type: 'status', data: 'Disconnected from server' }]);
+//     });
 
 //     return () => {
-//       if (wsRef.current) wsRef.current.close();
+//       socketRef.current.disconnect();
 //     };
-//   }, [topic]); // Reconnect if topic changes
+//   }, [baseUrl]);
 
-//   const sendMessage = (text, nodes = []) => {
-//     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-//       const message = JSON.stringify({ text, nodes });
-//       wsRef.current.send(message);
+//   const processDoubt = (doubtData) => {
+//     if (socketRef.current && isConnected) {
+//       socketRef.current.emit('process-doubt', doubtData);
+//       // Reset state for new request
+//       setMessages([]);
+//       setResponseData(null);
+//       setWordTimings([]);
+//       setAudioBlob(null);
+//       audioChunksRef.current = [];
 //     } else {
-//       console.error('WebSocket is not connected');
+//       console.error('Socket.IO not connected');
+//       setMessages((prev) => [...prev, { type: 'error', data: 'Not connected to server' }]);
 //     }
 //   };
 
-//   return { messages, isConnected, sendMessage };
+//   return { messages, responseData, wordTimings, audioBlob, isConnected, processDoubt };
 // };
 
-// export default useWebSocket;
+// export default useSocketIO;
 
 
 // src/hooks/useSocketIO.js
@@ -60,11 +97,14 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
 const useSocketIO = (baseUrl) => {
-  const [messages, setMessages] = useState([]); // Text and status messages
-  const [audioBlob, setAudioBlob] = useState(null); // Single audio Blob
+  const [messages, setMessages] = useState([]); // Status and errors only
+  const [responseData, setResponseData] = useState(null); // Complete AI response
+  const [wordTimings, setWordTimings] = useState([]); // Timing data for subtitles
+  const [audioBlob, setAudioBlob] = useState(null); // Combined audio
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef(null);
-  const audioChunksRef = useRef([]); // Store chunks until 'end'
+  const audioChunksRef = useRef([]);
+  const audioContentTypeRef = useRef('audio/mpeg'); // Default
 
   useEffect(() => {
     socketRef.current = io(baseUrl, { transports: ['websocket'] });
@@ -72,35 +112,53 @@ const useSocketIO = (baseUrl) => {
     socketRef.current.on('connect', () => {
       console.log('Socket.IO connected');
       setIsConnected(true);
+      setMessages((prev) => [...prev, { type: 'status', data: 'Connected to server' }]);
+    });
+
+    socketRef.current.on('status', (status) => {
+      setMessages((prev) => [...prev, { type: 'status', data: status.message }]);
     });
 
     socketRef.current.on('text_chunk', (chunk) => {
-      setMessages((prev) => [...prev, { type: 'text', data: chunk }]);
+      // No longer storing text chunks; we'll use wordTimings for subtitles
+      console.log('Received text chunk:', chunk);
+    });
+
+    socketRef.current.on('response_data', (data) => {
+      setResponseData(data);
+    });
+
+    socketRef.current.on('timing', (timingData) => {
+      setWordTimings(timingData);
+    });
+
+    socketRef.current.on('audio_header', (headerInfo) => {
+      audioChunksRef.current = []; // Reset chunks
+      audioContentTypeRef.current = headerInfo.content_type || 'audio/mpeg';
     });
 
     socketRef.current.on('audio_chunk', (chunk) => {
-      // Store chunk as ArrayBuffer
-      audioChunksRef.current.push(chunk instanceof ArrayBuffer ? chunk : chunk.buffer);
-      console.log('Received audio chunk, total chunks:', audioChunksRef.current.length);
+      audioChunksRef.current.push(chunk); // Buffer chunks
+      console.log('Received audio chunk, total:', audioChunksRef.current.length);
     });
 
     socketRef.current.on('end', (data) => {
-      // Combine chunks into a single Blob on stream end
       if (audioChunksRef.current.length > 0) {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mpeg' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: audioContentTypeRef.current });
         setAudioBlob(audioBlob);
-        audioChunksRef.current = []; // Reset chunks
+        audioChunksRef.current = []; // Reset
       }
-      setMessages((prev) => [...prev, { type: 'end', data }]);
+      setMessages((prev) => [...prev, { type: 'end', data: data.message }]);
     });
 
     socketRef.current.on('error', (error) => {
-      console.error('Socket.IO error:', error);
+      setMessages((prev) => [...prev, { type: 'error', data: error.message }]);
     });
 
     socketRef.current.on('disconnect', () => {
       console.log('Socket.IO disconnected');
       setIsConnected(false);
+      setMessages((prev) => [...prev, { type: 'status', data: 'Disconnected from server' }]);
     });
 
     return () => {
@@ -111,14 +169,19 @@ const useSocketIO = (baseUrl) => {
   const processDoubt = (doubtData) => {
     if (socketRef.current && isConnected) {
       socketRef.current.emit('process-doubt', doubtData);
-      audioChunksRef.current = []; // Reset chunks for new request
-      setAudioBlob(null); // Clear previous audio
+      // Reset state for new request
+      setMessages([]);
+      setResponseData(null);
+      setWordTimings([]);
+      setAudioBlob(null);
+      audioChunksRef.current = [];
     } else {
       console.error('Socket.IO not connected');
+      setMessages((prev) => [...prev, { type: 'error', data: 'Not connected to server' }]);
     }
   };
 
-  return { messages, audioBlob, isConnected, processDoubt };
+  return { messages, responseData, wordTimings, audioBlob, isConnected, processDoubt };
 };
 
 export default useSocketIO;

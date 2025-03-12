@@ -1,98 +1,207 @@
-
 // import React, { useState } from 'react';
-// import useWebSocket from '../../hooks/useWebSocket';
-
-// const RealTimeConnection = () => {
-//   const [input, setInput] = useState('');
-//   const [topic] = useState('test-topic'); // Set your topic here
-//   const { messages, isConnected, sendMessage } = useWebSocket(topic);
+// import useSocketIO from '../../hooks/useWebSocket';
+// const DoubtChat = () => {
+//   const [doubt, setDoubt] = useState('');
+//   const backendUrl = 'https://7e8c-2405-201-300c-7d-bd9c-7aa-87e7-d974.ngrok-free.app'; // Replace with your backend's IP and port
+//   const { messages, responseData, wordTimings, audioBlob, isConnected, processDoubt } = useSocketIO(backendUrl);
 
 //   const handleSend = () => {
-//     if (input.trim() === '') return;
-//     sendMessage(input);
-//     setInput('');
+//     if (doubt.trim() === '') return;
+
+//     const doubtData = {
+//       topic: 'test-topic', // Adjust as needed
+//       doubt: doubt,
+//       current_state: {
+//         highlightedElements: [],
+//         currentTime: 0,
+//         isOriginalNarration: true,
+//         currentNarration: '',
+//       },
+//       relevantNodes: [], // Add nodes if applicable
+//     };
+
+//     processDoubt(doubtData);
+//     setDoubt('');
 //   };
 
 //   return (
 //     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-//       <h1>Realtime Chat</h1>
+//       <h1>Doubt Chat</h1>
 //       <p>Status: {isConnected ? 'Connected' : 'Disconnected'}</p>
-//       <div style={{ border: '1px solid #ccc', padding: '10px', height: '300px', overflowY: 'auto', marginBottom: '10px' }}>
+      
+//       {/* Input */}
+//       <textarea
+//         value={doubt}
+//         onChange={(e) => setDoubt(e.target.value)}
+//         placeholder="Enter your doubt..."
+//         disabled={!isConnected}
+//         rows={4}
+//         style={{ width: '70%', marginRight: '10px', marginBottom: '10px' , color:"black"}}
+//       />
+//       <button onClick={handleSend} disabled={!isConnected}>
+//         Send Doubt
+//       </button>
+
+//       {/* Messages */}
+//       <div style={{ border: '1px solid #ccc', padding: '10px', height: '200px', overflowY: 'auto', marginTop: '10px' }}>
 //         {messages.map((msg, index) => (
 //           <div key={index}>
-//             {msg.type === 'text' && <p>Text: {msg.data}</p>}
-//             {msg.type === 'audio' && <audio controls src={URL.createObjectURL(msg.data)} />}
+//             {msg.type === 'text' && <p style={{ color: 'blue' }}>Text: {msg.data}</p>}
+//             {msg.type === 'status' && <p style={{ color: 'gray' }}>{msg.data}</p>}
+//             {msg.type === 'error' && <p style={{ color: 'red' }}>Error: {msg.data}</p>}
+//             {msg.type === 'end' && <p style={{ color: 'green' }}>{msg.data}</p>}
 //           </div>
 //         ))}
 //       </div>
-//       <input
-//         type="text"
-//         value={input}
-//         onChange={(e) => setInput(e.target.value)}
-//         placeholder="Type a message..."
-//         disabled={!isConnected}
-//         style={{ width: '70%', marginRight: '10px' }}
-//       />
-//       <button onClick={handleSend} disabled={!isConnected}>
-//         Send
-//       </button>
+
+//       {/* Response Data */}
+//       {responseData && (
+//         <div style={{ marginTop: '10px' }}>
+//           <h3>Response</h3>
+//           <p><strong>Explanation:</strong> {responseData.explanation}</p>
+//           {responseData.comprehensionQuestions && (
+//             <ul>
+//               {responseData.comprehensionQuestions.map((q, i) => (
+//                 <li key={i}>{q}</li>
+//               ))}
+//             </ul>
+//           )}
+//         </div>
+//       )}
+
+//       {/* Word Timings */}
+//       {/* {wordTimings.length > 0 && (
+//         <div style={{ marginTop: '10px' }}>
+//           <h3>Word Timings</h3>
+//           <ul>
+//             {wordTimings.slice(0, 5).map((timing, i) => ( // Limit to 5 for brevity
+//               <li key={i}>
+//                 {timing.word} ({timing.start_time}ms - {timing.end_time}ms)
+//                 {timing.node_id && ` [Node: ${timing.node_id}]`}
+//               </li>
+//             ))}
+//           </ul>
+//         </div>
+//       )} */}
+
+//       {/* Audio */}
+//       {audioBlob && (
+//         <div style={{ marginTop: '10px' }}>
+//           <h3>Audio Response</h3>
+//           <audio controls src={URL.createObjectURL(audioBlob)} />
+//         </div>
+//       )}
 //     </div>
 //   );
 // };
 
-// export default RealTimeConnection;
+// export default DoubtChat;
+
 
 // src/components/DoubtChat.js
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import useSocketIO from '../../hooks/useWebSocket';
 
 const DoubtChat = () => {
   const [doubt, setDoubt] = useState('');
-  const backendUrl = 'http://192.168.1.100:8000'; // Your backend's IP/domain
-  const { messages, audioBlob, isConnected, processDoubt } = useSocketIO(backendUrl);
+  const [currentSubtitle, setCurrentSubtitle] = useState('');
+  const backendUrl = 'https://7e8c-2405-201-300c-7d-bd9c-7aa-87e7-d974.ngrok-free.app'; // Replace with your backend's IP and port
+  const { messages, responseData, wordTimings, audioBlob, isConnected, processDoubt } = useSocketIO(backendUrl);
+  const audioRef = useRef(null);
+
+  // Sync subtitles with audio playback
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || wordTimings.length === 0) return;
+
+    const updateSubtitle = () => {
+      const currentTime = audio.currentTime * 1000; // Convert to ms
+      const currentWord = wordTimings.find(
+        (timing) => currentTime >= timing.start_time && currentTime <= timing.end_time
+      );
+      setCurrentSubtitle(currentWord ? currentWord.word : '');
+    };
+
+    audio.addEventListener('timeupdate', updateSubtitle);
+    return () => audio.removeEventListener('timeupdate', updateSubtitle);
+  }, [wordTimings]);
 
   const handleSend = () => {
     if (doubt.trim() === '') return;
 
     const doubtData = {
-      topic: 'test-topic',
+      topic: 'test-topic', // Adjust as needed
       doubt: doubt,
-      current_state: {},
-      relevantNodes: [], // Or "nodes" if required
+      current_state: {
+        highlightedElements: [],
+        currentTime: 0,
+        isOriginalNarration: true,
+        currentNarration: '',
+      },
+      relevantNodes: [], // Add nodes if applicable
     };
 
     processDoubt(doubtData);
     setDoubt('');
+    setCurrentSubtitle(''); // Reset subtitle
   };
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h1>Doubt Chat</h1>
       <p>Status: {isConnected ? 'Connected' : 'Disconnected'}</p>
-      <div style={{ border: '1px solid #ccc', padding: '10px', height: '300px', overflowY: 'auto', marginBottom: '10px' }}>
-        {messages.map((msg, index) => (
-          <div key={index}>
-            {msg.type === 'text' && <p>Text: {msg.data}</p>}
-            {msg.type === 'end' && <p>Stream ended</p>}
-          </div>
-        ))}
-        {audioBlob && (
-          <div>
-            <audio controls src={URL.createObjectURL(audioBlob)} />
-          </div>
-        )}
-      </div>
+
+      {/* Input */}
       <textarea
         value={doubt}
         onChange={(e) => setDoubt(e.target.value)}
         placeholder="Enter your doubt..."
         disabled={!isConnected}
         rows={4}
-        style={{ width: '70%', marginRight: '10px' }}
+        style={{ width: '70%', marginRight: '10px', marginBottom: '10px', color:"black" }}
       />
       <button onClick={handleSend} disabled={!isConnected}>
         Send Doubt
       </button>
+
+      {/* Messages (Status and Errors Only) */}
+      <div style={{ border: '1px solid #ccc', padding: '10px', height: '100px', overflowY: 'auto', marginTop: '10px' }}>
+        {messages.map((msg, index) => (
+          <div key={index}>
+            {msg.type === 'status' && <p style={{ color: 'gray' }}>{msg.data}</p>}
+            {msg.type === 'error' && <p style={{ color: 'red' }}>Error: {msg.data}</p>}
+            {msg.type === 'end' && <p style={{ color: 'green' }}>{msg.data}</p>}
+          </div>
+        ))}
+      </div>
+
+      {/* Response Data */}
+      {responseData && (
+        <div style={{ marginTop: '10px' }}>
+          <h3>Response</h3>
+          <p><strong>Explanation:</strong> {responseData.explanation}</p>
+          {responseData.comprehensionQuestions && (
+            <ul>
+              {responseData.comprehensionQuestions.map((q, i) => (
+                <li key={i}>{q}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Audio and Subtitles */}
+      {audioBlob && (
+        <div style={{ marginTop: '10px' }}>
+          <h3>Audio Response</h3>
+          <audio ref={audioRef} controls src={URL.createObjectURL(audioBlob)} />
+          {wordTimings.length > 0 && (
+            <div style={{ marginTop: '10px', fontSize: '1.2em', fontWeight: 'bold', color: 'blue' }}>
+              <p>Subtitle: {currentSubtitle || 'Waiting...'}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
