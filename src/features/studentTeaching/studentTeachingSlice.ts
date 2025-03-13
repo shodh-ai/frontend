@@ -2,11 +2,13 @@ import { KnowledgeDataApiResponse, TopicData } from "@/src/models/studentTeachin
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { getKnowledegeGrpahData, getTeachingVisualization } from "./studentTeachingThunks";
 import { HierarchicalData, TeachingVisualizationResponse} from "@/src/models/studentTeachingModel/TeachingVisualizationData";
+import { act } from "react";
 interface StudentTeachingState{
     status: "idle" | "loading" | "succeeded" | "failed";
     error:string | null;
     TopicsData: TopicData[] | null;
     TeachingVisualData: HierarchicalData | null;
+    CurrentTopicId:number | null;
 }
 
 const initialState : StudentTeachingState = {
@@ -14,11 +16,16 @@ const initialState : StudentTeachingState = {
     error:null,
     TopicsData: null,
     TeachingVisualData: null,
+    CurrentTopicId:null,
 }
 const StudentTeachingSlice = createSlice({
     name:"studentTeaching",
     initialState,
-    reducers:{},
+    reducers:{
+        setTeachingTopic : (state, action)=>{
+            state.CurrentTopicId = action.payload.topic_id;
+        }
+    },
     extraReducers:(builder)=>{
         builder
         .addCase(getKnowledegeGrpahData.pending, (state)=>{
@@ -45,5 +52,7 @@ const StudentTeachingSlice = createSlice({
         })
     }
 })
+
+export  const {setTeachingTopic} = StudentTeachingSlice.actions;
 
 export default StudentTeachingSlice.reducer;

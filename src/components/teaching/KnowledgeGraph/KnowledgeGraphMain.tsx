@@ -7,8 +7,9 @@ import { getKnowledegeGrpahData } from "@/src/features/studentTeaching/studentTe
 
 type Props = {
   setActiveSideTab: (index: number) => void;
+  setCurrentTopic:(id:number)=>void;
 };
-export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
+export default function KnowledgeGraphMain({ setActiveSideTab ,setCurrentTopic }: Props) {
   const [expandedTopic, setExpandedTopic] = useState<{
     [key: string]: boolean;
   }>({});
@@ -20,8 +21,11 @@ export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
     }));
   };
 
+  const selectTopic = (id:number)=>{
+    setCurrentTopic(id);
+  }
   const dispatch = useAppDispatch();
-  const{TopicsData, status, TeachingVisualData} = useAppSelector((state:RootState)=>state.studentTeaching);
+  const{TopicsData, status, CurrentTopicId} = useAppSelector((state:RootState)=>state.studentTeaching);
   useEffect(() => {
     dispatch(getKnowledegeGrpahData({ moduleId: 1, courseId: 2 }))
       .unwrap()
@@ -58,15 +62,15 @@ export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
 
       <div
         className={
-          "side_scroll flex flex-col gap-4 max-h-[570px] overflow-y-auto"
+          "side_scroll flex flex-col gap-3 max-h-[480px]  overflow-y-auto"
         }
       >
         {TopicsData && TopicsData.map((item) => {
           const topicKey = `topic_${item.topic.topicId}`;
           return (
-            <div className="flex flex-col gap-3" key={topicKey}>
+            <div className="flex flex-col gap-2" key={topicKey}>
               <div
-                className={`flex gap-2 p-2 cursor-pointer ${TeachingVisualData?.topic_id === item.topic.topicId ? "bg-barBgColor rounded-md" : ""}  `}
+                className={`flex gap-2 p-2 cursor-pointer ${CurrentTopicId === item.topic.topicId ? "bg-barBgColor rounded-md" : ""}  `}
                 onClick={() => toggleExpand(topicKey)}
               >
                 {expandedTopic[topicKey] ? (
@@ -93,10 +97,10 @@ export default function KnowledgeGraphMain({ setActiveSideTab }: Props) {
                 item.sub_topic.map((sub) => {
                   const subtopicKey = `subtopic_${item.topic.topicId}_${sub.topicId}`;
                   return (
-                    <div className="flex flex-col pl-3 py-1" key={subtopicKey}>
+                    <div className="flex flex-col pl-3 " key={subtopicKey}>
                       <div
-                        className={`flex gap-2 p-2 cursor-pointer ${TeachingVisualData?.topic_id === sub.topicId ? "bg-barBgColor rounded-md" : ""}  `}
-                        onClick={() => toggleExpand(subtopicKey)}
+                        className={`flex gap-2 p-2 cursor-pointer ${CurrentTopicId === sub.topicId ? "bg-barBgColor rounded-md" : ""}  `}
+                        onClick={() => {toggleExpand(subtopicKey); selectTopic(sub.topicId)}}
                       >
                         {expandedTopic[subtopicKey] ? (
                           <Image

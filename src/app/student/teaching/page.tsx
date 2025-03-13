@@ -1,11 +1,13 @@
-"use client";
 import Teaching from "@/src/components/teaching";
+import TeachingMain from "@/src/components/teaching/TeachingMain";
 import DoubtChat from '@/src/components/teaching/RealTimeConnection'
-import React from "react";
-
+import RenderComponent from "@/src/components/teaching/RenderComp"
 const TeachingPage = () => {
-  // return <Teaching />;
-  return <DoubtChat/>
+  // // return <Teaching />;
+  return <TeachingMain/>
+  
+  
+  // return <DoubtChat/>
 };
 
 export default TeachingPage;
