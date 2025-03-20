@@ -303,7 +303,6 @@ export default function RenderComponent({ currentTopic,handleSideTab, activeSide
       }
     if (!data || !topic) return null;
 
-
     // Use VisualizationController for shared memory and shared disk visualizations
     if (
       topic === "shared_memory" ||
