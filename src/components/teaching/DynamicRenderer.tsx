@@ -33,6 +33,8 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
     async function loadComponent() {
       try {
         // Ensure sanitized JSX is properly formatted
+        console.log("recievedjsx_code", data.jsx_code);
+
         const cleanedJSX = data.jsx_code
           .replace(/\\\\/g, "\\") // Remove extra backslashes
           .replace(/\\n/g, "\n") // Convert escaped newlines
@@ -42,6 +44,7 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
           .replace(/import\s+.*?from\s+["'].*?["'];?/g, "") // Remove imports
           .replace(/export\s+default\s+/g, ""); // Remove `export default`
 
+          console.log("Sanitized code: ", sanitizedJSX);
         const componentFunction = new Function(
           "React",
           "d3",
@@ -71,6 +74,8 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ data }) => {
           );
           return;
         }
+
+  
         setComponent(() => DynamicComponent);
       } catch (error) {
         console.error("🚨 Error processing dynamic JSX code:", error);

@@ -18,6 +18,7 @@ export const endPoints = {
     },
     studentTeaching:{
         GET_ALL_TOPICS_BY_MODULE:"topic/get-all",
-        GET_TEACHING_VISUALIZATION:"visualization/get"
+        GET_TEACHING_VISUALIZATION:"visualization/get",
+        UPDATE_TIMESTAMP:"simulation/update-timestamp",
     }
 }

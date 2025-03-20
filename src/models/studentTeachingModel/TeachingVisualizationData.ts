@@ -30,3 +30,15 @@ export interface TeachingVisualizationResponse {
   status: string;
   status_code: number;
 }
+
+
+export interface TemporaryVisualization {
+  nodes: Node[];
+  edges: Edge[];
+  jsx_code: string;
+  topic: string;
+  narration: string;
+  narration_timestamps: [];
+  animation_states:[];
+  node_id:null;
+}
