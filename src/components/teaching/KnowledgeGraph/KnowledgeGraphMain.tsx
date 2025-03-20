@@ -7,9 +7,9 @@ import { getKnowledegeGrpahData } from "@/src/features/studentTeaching/studentTe
 
 type Props = {
   setActiveSideTab: (index: number) => void;
-  setCurrentTopic:(id:number)=>void;
+  // setCurrentTopic:(id:number)=>void;
 };
-export default function KnowledgeGraphMain({ setActiveSideTab ,setCurrentTopic }: Props) {
+export default function KnowledgeGraphMain({ setActiveSideTab  }: Props) {
   const [expandedTopic, setExpandedTopic] = useState<{
     [key: string]: boolean;
   }>({});
@@ -21,9 +21,9 @@ export default function KnowledgeGraphMain({ setActiveSideTab ,setCurrentTopic }
     }));
   };
 
-  const selectTopic = (id:number)=>{
-    setCurrentTopic(id);
-  }
+  // const selectTopic = (id:number)=>{
+  //   setCurrentTopic(id);
+  // }
   const dispatch = useAppDispatch();
   const{TopicsData, status, CurrentTopicId} = useAppSelector((state:RootState)=>state.studentTeaching);
   useEffect(() => {
@@ -100,7 +100,9 @@ export default function KnowledgeGraphMain({ setActiveSideTab ,setCurrentTopic }
                     <div className="flex flex-col pl-3 " key={subtopicKey}>
                       <div
                         className={`flex gap-2 p-2 cursor-pointer ${CurrentTopicId === sub.topicId ? "bg-barBgColor rounded-md" : ""}  `}
-                        onClick={() => {toggleExpand(subtopicKey); selectTopic(sub.topicId)}}
+                        onClick={() => {toggleExpand(subtopicKey); 
+                          // selectTopic(sub.topicId)
+                        }}
                       >
                         {expandedTopic[subtopicKey] ? (
                           <Image

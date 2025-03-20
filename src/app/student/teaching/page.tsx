@@ -8,6 +8,9 @@ const TeachingPage = () => {
   
   
   // return <DoubtChat/>
+  // return <RenderComponent/>
+
+
 };
 
 export default TeachingPage;
