@@ -97,8 +97,9 @@ export default function TeachingMain() {
         >
           {activeSideTab === 0 ? (
             <KnowledgeGraphMain
-               // KnowledgeGraphMain updates currentTopic
+               
               setActiveSideTab={setActiveSideTab}
+              setCurrentTopic={setCurrentTopic}
             />
           ) : activeSideTab === 1 ? (
             <NotesOverlay

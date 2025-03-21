@@ -24,6 +24,9 @@ const StudentTeachingSlice = createSlice({
     reducers:{
         setTeachingTopic : (state, action)=>{
             state.CurrentTopicId = action.payload.topic_id;
+        },
+        setCurrentTopicId : (state, action: PayloadAction<number>)=>{
+            state.CurrentTopicId = action.payload;
         }
     },
     extraReducers:(builder)=>{
@@ -53,6 +56,6 @@ const StudentTeachingSlice = createSlice({
     }
 })
 
-export  const {setTeachingTopic} = StudentTeachingSlice.actions;
+export  const {setTeachingTopic, setCurrentTopicId} = StudentTeachingSlice.actions;
 
 export default StudentTeachingSlice.reducer;
