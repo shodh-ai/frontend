@@ -18,6 +18,7 @@ import RelationalQueryVisualization from './visualizationComponents/Relationalqu
 // import NormalFormVisualization from './visualizationComponents/NormalizationVisualization';
 // import ActiveDBVisualization from './visualizationComponents/ActivedbVisualization';
 import QueryProcessingVisualization from './visualizationComponents/QueryprocessingVisualization';
+import GdpVisualization from './visualizationComponents/GdpVisualization'
 // import MobiledbVisualization from './visualizationComponents/MobiledbVisualization';
 // import GISVisualization from './visualizationComponents/GisVisualization';
 // import BusinessPolicyVisualization from './visualizationComponents/BusinessPolicyVisualization';
@@ -36,6 +37,7 @@ const VISUALIZATIONS = {
   oop_concepts: OOPConceptsVisualization,
   relationalQuery: RelationalQueryVisualization,
   queryprocessing: QueryProcessingVisualization,
+  gdp: GdpVisualization
 };
 
 export default function MainVisualization({ handleSideTab, activeSideTab, currentTopic }) {
@@ -257,6 +259,8 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
   };
 
   const handleDoubtSubmit = () => {
+
+    console.log("11111111111111111")
     if (!content.trim() || !currentTopic) {
       setError("Please enter a doubt and select a topic");
       return;
@@ -313,10 +317,120 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
   }, [socket, visualizationData]);
 
   const handleNarrationComplete = (highlightedNodes, isComplete) => {
-    if (highlightedNodes && highlightedNodes.length > 0) setHighlightedElements([...highlightedNodes]);
-    if (isComplete) {
-      setRealtimeSession(null);
-      setIsPlaying(false);
+    console.log('HIGHLIGHT DEBUG: Received highlighted nodes in App:', highlightedNodes, 'isComplete:', isComplete);
+    
+    if (highlightedNodes && highlightedNodes.length > 0) {
+      console.log('HIGHLIGHT DEBUG: Setting highlighted nodes in App:', highlightedNodes);
+      
+      // Get valid node IDs from the visualization data
+      let validNodeIds = [];
+      if (visualizationData && visualizationData.nodes) {
+        validNodeIds = visualizationData.nodes.map(node => node.id);
+      }
+      console.log('HIGHLIGHT DEBUG: Valid node IDs in visualization:', validNodeIds);
+      
+      // Special handling for GDP visualization
+      if (currentTopic === 'gdp') {
+        // For GDP visualization, we don't need to validate the node IDs
+        // because they're hardcoded in the visualization
+        setHighlightedElements(highlightedNodes);
+        console.log('HIGHLIGHT DEBUG: Setting GDP highlightedElements with:', highlightedNodes);
+      } else {
+        // For other visualizations, filter out invalid node IDs
+        const invalidNodeIds = highlightedNodes.filter(id => !validNodeIds.includes(id));
+        if (invalidNodeIds.length > 0) {
+          console.log('HIGHLIGHT DEBUG: Some node IDs do not exist in the visualization:', invalidNodeIds);
+        }
+        
+        const validHighlightedNodes = highlightedNodes.filter(id => validNodeIds.includes(id));
+        console.log('HIGHLIGHT DEBUG: Using only valid node IDs:', validHighlightedNodes);
+        
+        setHighlightedElements(validHighlightedNodes);
+      }
+      
+      console.log('HIGHLIGHT DEBUG: Setting highlightedElements state with:', highlightedNodes);
+    } else if (isComplete) {
+      console.log('HIGHLIGHT DEBUG: Narration complete, resetting state');
+      setIsNarrationPlaying(false);
+      setIsNarrationOnly(false);
+      setHighlightedElements([]);
+    } else {
+      console.log('HIGHLIGHT DEBUG: Clearing all highlights');
+      setHighlightedElements([]);
+    }
+    
+    console.log('HIGHLIGHT DEBUG: Current highlightedElements after update:', highlightedElements);
+  };
+
+  // Update the handlePlayNarration function to properly manage state
+  const handlePlayNarration = () => {
+    if (currentTopic) {
+      // First ensure we're in narration-only mode
+      setIsNarrationOnly(true);
+      
+      // Use a timeout to ensure the component is rendered
+      setTimeout(() => {
+        if (audioPlayerRef.current) {
+          // Stop any existing narration first
+          audioPlayerRef.current.stopNarration();
+          
+          console.log('Starting narration for topic:', currentTopic);
+          audioPlayerRef.current.playNarrationScript(currentTopic);
+          setIsNarrationPlaying(true);
+        }
+      }, 100);
+    }
+  };
+
+  const handleFetchVisualizationData = async (topic) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Special case for GDP visualization
+      if (topic === 'gdp') {
+        // Use a hardcoded placeholder for GDP data
+        const gdpData = {
+          topic: "gdp",
+          nodes: [
+            {"id": "2000", "name": "2000", "type": "year", "properties": ["0.47", "4.0"]},
+            {"id": "2005", "name": "2005", "type": "year", "properties": ["0.82", "7.9"]},
+            {"id": "2010", "name": "2010", "type": "year", "properties": ["1.66", "8.5"]},
+            {"id": "2015", "name": "2015", "type": "year", "properties": ["2.10", "8.0"]},
+            {"id": "2020", "name": "2020", "type": "year", "properties": ["2.66", "-6.6"]},
+            {"id": "2021", "name": "2021", "type": "year", "properties": ["3.18", "8.7"]},
+            {"id": "2022", "name": "2022", "type": "year", "properties": ["3.39", "7.2"]},
+            {"id": "2023", "name": "2023", "type": "year", "properties": ["3.74", "6.3"]},
+            {"id": "2024", "name": "2024", "type": "year", "properties": ["4.05", "6.5"]},
+            {"id": "2025", "name": "2025", "type": "year", "properties": ["4.44", "6.5"]}
+          ],
+          edges: []
+        };
+        
+        setVisualizationData(gdpData);
+        setIsLoading(false);
+        return;
+      }
+      
+      // For other visualizations, continue with the existing code
+      const response = await fetch(`/static/data/${topic}_visualization.json`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch visualization data: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setVisualizationData(data);
+    } catch (error) {
+      console.error('Error fetching visualization data:', error);
+      setError(`Failed to load visualization: ${error.message}`);
+      
+      // Provide fallback data for common visualizations
+      if (topic === 'er') {
+        // Existing ER fallback code...
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -339,8 +453,8 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
         </div>
       </header>
 
-      <div className="main-content">
-        <div className="visualization-container">
+      <div >
+        <div >
           <VisualizationPanel>
             {error ? <div>{error}</div> : renderVisualization()}
             {isLoading && (

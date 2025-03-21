@@ -2,7 +2,7 @@ import React from 'react';
 
 const VisualizationPanel = ({ children }) => {
   return (
-    <div className="visualization-panel">
+    <div >
       {children}
     </div>
   );

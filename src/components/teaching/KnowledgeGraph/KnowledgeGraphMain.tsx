@@ -189,6 +189,7 @@ export default function KnowledgeGraphMain({ setActiveSideTab, setCurrentTopic }
     24: "shared_nothing",
     25: "distributed_database",
     27: "oop_concepts",
+    37:"gdp",
   };
 
   const getParentTopicId = (topicId: number): number | null => {
