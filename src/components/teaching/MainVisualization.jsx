@@ -5,9 +5,37 @@ import { io } from "socket.io-client";
 import VisualizationPanel from "./doubtComponents/VisualizationPanel";
 import RealtimeAudioPlayer from "./doubtComponents/RealTimeAudioPlayer";
 import ERVisualization from "./visualizationComponents/ERVisualization";
+import DocumentVisualization from './visualizationComponents/DocumentVisualization';
+import HierarchicalVisualization from './visualizationComponents/HierarchicalVisualization';
+import EntityVisualization from './visualizationComponents/EntityVisualization';
+import AttributeVisualization from './visualizationComponents/AttributeVisualization';
+import SharedMemoryVisualization from './visualizationComponents/SharedMemoryVisualization';
+import SharedDiskVisualization from './visualizationComponents/SharedDiskVisualization';
+import SharedNothingVisualization from './visualizationComponents/SharedNothingVisualization';
+import DistributedDatabaseVisualization from './visualizationComponents/DistributedDatabaseVisualization';
+import OOPConceptsVisualization from './visualizationComponents/OOPConceptsVisualization';
+import RelationalQueryVisualization from './visualizationComponents/RelationalqueryVisualization';
+// import NormalFormVisualization from './visualizationComponents/NormalizationVisualization';
+// import ActiveDBVisualization from './visualizationComponents/ActivedbVisualization';
+import QueryProcessingVisualization from './visualizationComponents/QueryprocessingVisualization';
+// import MobiledbVisualization from './visualizationComponents/MobiledbVisualization';
+// import GISVisualization from './visualizationComponents/GisVisualization';
+// import BusinessPolicyVisualization from './visualizationComponents/BusinessPolicyVisualization';
+
 
 const VISUALIZATIONS = {
   er: ERVisualization,
+  document: DocumentVisualization,
+  hierarchical: HierarchicalVisualization,
+  entity: EntityVisualization,
+  attribute: AttributeVisualization,
+  shared_memory: SharedMemoryVisualization,
+  shared_disk: SharedDiskVisualization,
+  shared_nothing: SharedNothingVisualization,
+  distributed_database: DistributedDatabaseVisualization,
+  oop_concepts: OOPConceptsVisualization,
+  relationalQuery: RelationalQueryVisualization,
+  queryprocessing: QueryProcessingVisualization,
 };
 
 export default function MainVisualization({ handleSideTab, activeSideTab, currentTopic }) {
