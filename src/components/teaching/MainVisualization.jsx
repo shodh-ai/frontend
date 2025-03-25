@@ -1,478 +1,3 @@
-// import React, { useState, useEffect, useRef } from "react";
-// import Image from "next/image";
-// import { MdClose, MdMicNone, MdPause, MdPlayArrow } from "react-icons/md";
-// import { io } from "socket.io-client";
-// import VisualizationPanel from "./doubtComponents/VisualizationPanel";
-// import RealtimeAudioPlayer from "./doubtComponents/RealTimeAudioPlayer";
-// import ERVisualization from "./visualizationComponents/ERVisualization";
-// import DocumentVisualization from './visualizationComponents/DocumentVisualization';
-// import HierarchicalVisualization from './visualizationComponents/HierarchicalVisualization';
-// import EntityVisualization from './visualizationComponents/EntityVisualization';
-// import AttributeVisualization from './visualizationComponents/AttributeVisualization';
-// import SharedMemoryVisualization from './visualizationComponents/SharedMemoryVisualization';
-// import SharedDiskVisualization from './visualizationComponents/SharedDiskVisualization';
-// import SharedNothingVisualization from './visualizationComponents/SharedNothingVisualization';
-// import DistributedDatabaseVisualization from './visualizationComponents/DistributedDatabaseVisualization';
-// import OOPConceptsVisualization from './visualizationComponents/OOPConceptsVisualization';
-// import RelationalQueryVisualization from './visualizationComponents/RelationalqueryVisualization';
-// // import NormalFormVisualization from './visualizationComponents/NormalizationVisualization';
-// // import ActiveDBVisualization from './visualizationComponents/ActivedbVisualization';
-// import QueryProcessingVisualization from './visualizationComponents/QueryprocessingVisualization';
-// // import MobiledbVisualization from './visualizationComponents/MobiledbVisualization';
-// // import GISVisualization from './visualizationComponents/GisVisualization';
-// // import BusinessPolicyVisualization from './visualizationComponents/BusinessPolicyVisualization';
-
-
-// const VISUALIZATIONS = {
-//   er: ERVisualization,
-//   document: DocumentVisualization,
-//   hierarchical: HierarchicalVisualization,
-//   entity: EntityVisualization,
-//   attribute: AttributeVisualization,
-//   shared_memory: SharedMemoryVisualization,
-//   shared_disk: SharedDiskVisualization,
-//   shared_nothing: SharedNothingVisualization,
-//   distributed_database: DistributedDatabaseVisualization,
-//   oop_concepts: OOPConceptsVisualization,
-//   relationalQuery: RelationalQueryVisualization,
-//   queryprocessing: QueryProcessingVisualization,
-// };
-
-// export default function MainVisualization({ handleSideTab, activeSideTab, currentTopic }) {
-//   const [socket, setSocket] = useState(null);
-//   const [isConnected, setIsConnected] = useState(false);
-//   const [visualizationData, setVisualizationData] = useState(null);
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [error, setError] = useState(null);
-//   const [highlightedElements, setHighlightedElements] = useState([]);
-//   const [content, setContent] = useState("");
-//   const [isHighlightPlayButton, setIsHighlightPlayButton] = useState(false);
-//   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
-//   const [isRecording, setIsRecording] = useState(false);
-//   const [isPlaying, setIsPlaying] = useState(false);
-//   const [realtimeSession, setRealtimeSession] = useState(null);
-//   const [isMicActive, setIsMicActive] = useState(true); // Start with mic on
-//   const microphoneStreamRef = useRef(null);
-//   const audioContextRef = useRef(null);
-//   const analyserRef = useRef(null);
-//   const microphoneSourceRef = useRef(null);
-
-//   useEffect(() => {
-//     if (currentTopic) {
-//       const placeholderData = getPlaceholderData(currentTopic);
-//       setVisualizationData(placeholderData);
-//     }
-//   }, [currentTopic]);
-
-//   useEffect(() => {
-//     const newSocket = io(process.env.NEXT_PUBLIC_SHODH_ML_URL, {
-//       transports: ["websocket", "polling"],
-//       reconnectionAttempts: 5,
-//       reconnectionDelay: 1000,
-//       timeout: 20000,
-//       autoConnect: true,
-//     });
-
-//     newSocket.on("connect", () => {
-//       console.log("Connected to server");
-//       setIsConnected(true);
-//       loadVisualization(currentTopic);
-//     });
-
-//     newSocket.on("disconnect", () => {
-//       console.log("Disconnected from server");
-//       setIsConnected(false);
-//     });
-
-//     newSocket.on("visualization_response", (data) => {
-//       console.log("Received visualization data:", data);
-//       setVisualizationData(data);
-//       window.visualizationData = data;
-//       setIsLoading(false);
-//       initiateWebRTCSession(data.topic || currentTopic);
-//     });
-
-//     newSocket.on("error", (err) => {
-//       console.error("Socket error:", err);
-//       setError(`Error: ${err.message || "Unknown error"}`);
-//       setIsLoading(false);
-//     });
-
-//     setSocket(newSocket);
-
-//     return () => {
-//       if (newSocket) newSocket.disconnect();
-//     };
-//   }, [currentTopic]);
-
-//   // Voice Activity Detection Setup
-//   const setupVoiceDetection = async () => {
-//     try {
-//       const stream = await navigator.mediaDevices.getUserMedia({
-//         audio: {
-//           echoCancellation: true,
-//           noiseSuppression: true,
-//           autoGainControl: true,
-//         },
-//       });
-//       microphoneStreamRef.current = stream;
-
-//       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-//       audioContextRef.current = audioContext;
-//       const analyser = audioContext.createAnalyser();
-//       analyserRef.current = analyser;
-//       analyser.fftSize = 2048;
-//       const microphone = audioContext.createMediaStreamSource(stream);
-//       microphoneSourceRef.current = microphone;
-//       microphone.connect(analyser);
-
-//       const dataArray = new Uint8Array(analyser.frequencyBinCount);
-//       let silenceStart = null;
-//       const threshold = 50;
-//       const silenceDelay = 1000;
-
-//       const checkVoiceActivity = () => {
-//         if (!isMicActive) return; // Stop VAD if mic is off
-//         analyser.getByteFrequencyData(dataArray);
-//         const average = dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length;
-
-//         if (average > threshold) {
-//           if (!isRecording) {
-//             console.log("Speech detected, turning on recording");
-//             setIsRecording(true);
-//             silenceStart = null;
-//           }
-//         } else if (isRecording) {
-//           if (!silenceStart) silenceStart = Date.now();
-//           if (Date.now() - silenceStart > silenceDelay) {
-//             console.log("Silence detected, turning off recording");
-//             setIsRecording(false);
-//             silenceStart = null;
-//           }
-//         }
-//         requestAnimationFrame(checkVoiceActivity);
-//       };
-
-//       checkVoiceActivity();
-//     } catch (err) {
-//       console.error("Error setting up voice detection:", err);
-//       setError("Failed to access microphone for voice detection.");
-//       setIsMicActive(false);
-//     }
-//   };
-
-//   // Cleanup Microphone
-//   const cleanupMicrophone = () => {
-//     if (microphoneStreamRef.current) {
-//       const tracks = microphoneStreamRef.current.getTracks();
-//       tracks.forEach(track => {
-//         track.stop(); // Stop the track
-//         console.log(`Stopped track: ${track.kind}, id: ${track.id}, enabled: ${track.enabled}`);
-//       });
-//       microphoneStreamRef.current = null; // Clear the reference
-//       console.log("Microphone stream reference cleared");
-//     }
-//     if (audioContextRef.current) {
-//       audioContextRef.current.close()
-//         .then(() => {
-//           console.log("AudioContext closed");
-//           audioContextRef.current = null;
-//         })
-//         .catch(err => console.error("Error closing AudioContext:", err));
-//     }
-//     setIsRecording(false);
-//   };
-
-//   // Toggle Microphone
-//   const toggleMicrophone = () => {
-//     if (isMicActive) {
-//       console.log("Turning off microphone");
-//       cleanupMicrophone();
-//       setIsMicActive(false);
-//     } else {
-//       console.log("Turning on microphone");
-//       setIsMicActive(true);
-//       setupVoiceDetection();
-//     }
-//   };
-
-//   // Start mic on mount
-//   useEffect(() => {
-//     setupVoiceDetection();
-//     return () => {
-//       cleanupMicrophone();
-//     };
-//   }, []);
-
-//   const loadVisualization = (topic) => {
-//     if (!socket || !isConnected) {
-//       console.log("Socket not connected, using placeholder data");
-//       return;
-//     }
-//     setIsLoading(true);
-//     setError(null);
-//     socket.emit("visualization", { topic });
-//   };
-
-//   const getPlaceholderData = (topic) => {
-//     if (topic === "er") {
-//       return {
-//         nodes: [
-//           { id: "student", name: "Student", type: "entity", attributes: [{ name: "student_id", isKey: true }, { name: "name", isKey: false }, { name: "email", isKey: false }] },
-//           { id: "course", name: "Course", type: "entity", attributes: [{ name: "course_id", isKey: true }, { name: "title", isKey: false }, { name: "credits", isKey: false }] },
-//           { id: "enrollment", name: "Enrolls", type: "relationship" },
-//         ],
-//         edges: [
-//           { source: "student", target: "enrollment", type: "participates" },
-//           { source: "enrollment", target: "course", type: "participates" },
-//         ],
-//         topic,
-//         narration: "Loading narration... (Offline Mode)",
-//         narration_timestamps: [],
-//       };
-//     }
-//     return {
-//       nodes: [],
-//       edges: [],
-//       topic,
-//       narration: `Placeholder for ${topic.replace("_", " ")} (Offline Mode)`,
-//       narration_timestamps: [],
-//     };
-//   };
-
-//   const initiateWebRTCSession = (topic, doubtText = "") => {
-//     if (!socket || !isConnected) {
-//       setError("Not connected to server, WebRTC unavailable");
-//       return;
-//     }
-//     console.log("Initiating WebRTC session for topic:", topic);
-//     const sessionId = Date.now().toString();
-//     setRealtimeSession({
-//       sessionId,
-//       topic,
-//       doubt: doubtText,
-//       visualizationData,
-//     });
-//     socket.emit("start_webrtc_session", { sessionId, topic, doubt: doubtText });
-//   };
-
-//   const handleDoubtSubmit = () => {
-//     if (!content.trim() || !currentTopic) {
-//       setError("Please enter a doubt and select a topic");
-//       return;
-//     }
-//     if (!socket || !isConnected) {
-//       setError("Not connected to server, cannot submit doubt");
-//       return;
-//     }
-//     setIsLoading(true);
-//     setError(null);
-//     initiateWebRTCSession(currentTopic, content);
-//     setContent("");
-//     setIsLoading(false);
-//   };
-
-//   const closeAISession = () => {
-//     console.log("Closing AI session");
-//     setRealtimeSession(null);
-//     setHighlightedElements([]);
-//     setIsPlaying(false);
-//     if (isMicActive) toggleMicrophone(); // Turn off mic when closing
-//   };
-
-//   const renderVisualization = () => {
-//     if (!visualizationData || !currentTopic) return <div>No topic selected</div>;
-//     const VisualizationComponent = VISUALIZATIONS[currentTopic];
-//     if (!VisualizationComponent) return <div>No visualization component available for {currentTopic}</div>;
-//     return (
-//       <VisualizationComponent
-//         data={visualizationData}
-//         highlightedElements={highlightedElements}
-//         currentTime={Date.now()}
-//       />
-//     );
-//   };
-
-//   useEffect(() => {
-//     if (!socket) return;
-//     socket.on("start_webrtc_session", (data) => {
-//       console.log("WebRTC session request received:", data);
-//       setRealtimeSession((prevSession) => {
-//         if (prevSession) return prevSession;
-//         if (!visualizationData && data.topic) socket.emit("visualization", { topic: data.topic });
-//         setHighlightedElements([]);
-//         return {
-//           sessionId: data.sessionId,
-//           topic: data.topic,
-//           doubt: data.doubt,
-//           visualizationData,
-//         };
-//       });
-//     });
-//     return () => socket.off("start_webrtc_session");
-//   }, [socket, visualizationData]);
-
-//   const handleNarrationComplete = (highlightedNodes, isComplete) => {
-//     if (highlightedNodes && highlightedNodes.length > 0) setHighlightedElements([...highlightedNodes]);
-//     if (isComplete) {
-//       setRealtimeSession(null);
-//       setIsPlaying(false);
-//     }
-//   };
-
-//   const handlePlayingChange = (playing) => {
-//     setIsPlaying(playing);
-//   };
-
-//   const handleKeyDown = (e) => {
-//     if (e.key === "Enter") handleDoubtSubmit();
-//   };
-
-//   const handleChange = (e) => setContent(e);
-
-//   return (
-//     <div className="app-container">
-//       <header>
-//         <h1>Database Visualization</h1>
-//         <div className="connection-status">
-//           {isConnected ? <span>Connected</span> : <span>Disconnected</span>}
-//         </div>
-//       </header>
-
-//       <div className="main-content">
-//         <div className="visualization-container">
-//           <VisualizationPanel>
-//             {error ? <div>{error}</div> : renderVisualization()}
-//             {isLoading && (
-//               <div>
-//                 <div className="loading-spinner"></div>
-//               </div>
-//             )}
-//           </VisualizationPanel>
-//         </div>
-
-//         {realtimeSession && isConnected && (
-//           <RealtimeAudioPlayer
-//             topic={realtimeSession.topic}
-//             doubt={realtimeSession.doubt}
-//             sessionId={realtimeSession.sessionId}
-//             onComplete={handleNarrationComplete}
-//             visualizationData={visualizationData}
-//             microphoneStream={microphoneStreamRef.current}
-//             isRecording={isRecording}
-//             onPlayingChange={handlePlayingChange}
-//             onClose={closeAISession}
-//           />
-//         )}
-//       </div>
-
-//       <div className="absolute bottom-0 left-0 right-0 flex w-full p-2 items-center gap-2 my-2 z-30">
-//         <div className="flex gap-2">
-//           <button
-//             className={`border border-[var(--Border-Secondary)] rounded-lg p-2 ${
-//               activeSideTab === 0 ? "bg-barBgColor" : ""
-//             }`}
-//             onClick={() => handleSideTab(0)}
-//           >
-//             <Image
-//               src={"/knowledgeGraph.svg"}
-//               alt="image"
-//               height={40}
-//               width={40}
-//               className="min-w-[24px] min-h-[24px] w-full"
-//             />
-//           </button>
-//           <button
-//             className={`border border-[var(--Border-Secondary)] rounded-lg p-2 ${
-//               activeSideTab === 1 ? "bg-barBgColor" : ""
-//             }`}
-//             onClick={() => handleSideTab(1)}
-//           >
-//             <Image
-//               src={"/QuestionIcon.svg"}
-//               alt="image"
-//               height={40}
-//               width={40}
-//               className="min-w-[24px] min-h-[24px] w-full"
-//             />
-//           </button>
-//         </div>
-//         <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] p-2 max-sm:p-1 flex items-center justify-between rounded-md w-full">
-//           <div className="flex gap-3 w-full">
-//             <Image src={"/UploadFileIcon.svg"} alt="image" height={24} width={24} />
-//             <input
-//               placeholder="Ask me anything!"
-//               className="border-none focus:outline-none bg-transparent w-full text-nowrap"
-//               onChange={(e) => handleChange(e.target.value)}
-//               type="text"
-//               value={content}
-//               onKeyDown={handleKeyDown}
-//             />
-//           </div>
-//           <Image
-//             src={"/SendIcon.svg"}
-//             className="cursor-pointer"
-//             alt="image"
-//             height={32}
-//             width={32}
-//             onClick={() => {
-//               handleDoubtSubmit();
-//               setContent("");
-//             }}
-//           />
-//         </div>
-//         <div className="flex gap-2">
-//           <button
-//             className={`p-2 border border-[var(--Border-Secondary)] rounded-lg ${
-//               isMicActive ? "text-red-500" : ""
-//             } transition-colors relative`}
-//             onClick={toggleMicrophone}
-//           >
-//             <div className="relative">
-//               <MdMicNone size="1.5em" className={isMicActive ? "relative z-10" : ""} />
-//               {isMicActive && (
-//                 <div className="absolute inset-0 -m-2 z-0 rounded-full animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] bg-red-500/75" />
-//               )}
-//             </div>
-//           </button>
-//           <button
-//             className={`border border-[var(--Border-Secondary)] rounded-lg p-2 
-//               ${isLoadingAudio ? "opacity-50 cursor-not-allowed" : ""} 
-//               ${isPlaying ? "bg-blue-500" : ""} 
-//               ${isHighlightPlayButton ? "animate-pulse border-red-500 shadow-[0_0_10px_#00ff00]" : ""}`}
-//             disabled={isLoadingAudio}
-//           >
-//             {isLoadingAudio ? (
-//               <div className="loader border-4 border-t-transparent border-gray-300 rounded-full w-6 h-6 animate-spin"></div>
-//             ) : isPlaying ? (
-//               <MdPause size="1.3em" />
-//             ) : (
-//               <MdPlayArrow size="1.3em" />
-//             )}
-//           </button>
-//           <button
-//             className="border border-[var(--Border-Secondary)] rounded-lg p-3"
-//             onClick={closeAISession}
-//           >
-//             <MdClose size="1.2em" />
-//           </button>
-//         </div>
-//       </div>
-
-//       <style jsx>{`
-//         @keyframes spin {
-//           0% { transform: rotate(0deg); }
-//           100% { transform: rotate(360deg); }
-//         }
-//         @keyframes ping {
-//           0% { transform: scale(1); opacity: 1; }
-//           75%, 100% { transform: scale(2); opacity: 0; }
-//         }
-//       `}</style>
-//     </div>
-//   );
-// }
-
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { MdClose, MdMicNone, MdPause, MdPlayArrow } from "react-icons/md";
@@ -480,17 +5,18 @@ import { io } from "socket.io-client";
 import VisualizationPanel from "./doubtComponents/VisualizationPanel";
 import RealtimeAudioPlayer from "./doubtComponents/RealTimeAudioPlayer";
 import ERVisualization from "./visualizationComponents/ERVisualization";
-import DocumentVisualization from './visualizationComponents/DocumentVisualization';
-import HierarchicalVisualization from './visualizationComponents/HierarchicalVisualization';
-import EntityVisualization from './visualizationComponents/EntityVisualization';
-import AttributeVisualization from './visualizationComponents/AttributeVisualization';
-import SharedMemoryVisualization from './visualizationComponents/SharedMemoryVisualization';
-import SharedDiskVisualization from './visualizationComponents/SharedDiskVisualization';
-import SharedNothingVisualization from './visualizationComponents/SharedNothingVisualization';
-import DistributedDatabaseVisualization from './visualizationComponents/DistributedDatabaseVisualization';
-import OOPConceptsVisualization from './visualizationComponents/OOPConceptsVisualization';
-import RelationalQueryVisualization from './visualizationComponents/RelationalqueryVisualization';
-import QueryProcessingVisualization from './visualizationComponents/QueryprocessingVisualization';
+import DocumentVisualization from "./visualizationComponents/DocumentVisualization";
+import HierarchicalVisualization from "./visualizationComponents/HierarchicalVisualization";
+import EntityVisualization from "./visualizationComponents/EntityVisualization";
+import AttributeVisualization from "./visualizationComponents/AttributeVisualization";
+import SharedMemoryVisualization from "./visualizationComponents/SharedMemoryVisualization";
+import SharedDiskVisualization from "./visualizationComponents/SharedDiskVisualization";
+import SharedNothingVisualization from "./visualizationComponents/SharedNothingVisualization";
+import DistributedDatabaseVisualization from "./visualizationComponents/DistributedDatabaseVisualization";
+import OOPConceptsVisualization from "./visualizationComponents/OOPConceptsVisualization";
+import RelationalQueryVisualization from "./visualizationComponents/RelationalqueryVisualization";
+import QueryProcessingVisualization from "./visualizationComponents/QueryprocessingVisualization";
+import GdpVisualization from "./visualizationComponents/GdpVisualization";
 
 const VISUALIZATIONS = {
   er: ERVisualization,
@@ -505,9 +31,14 @@ const VISUALIZATIONS = {
   oop_concepts: OOPConceptsVisualization,
   relationalQuery: RelationalQueryVisualization,
   queryprocessing: QueryProcessingVisualization,
+  gdp: GdpVisualization,
 };
 
-export default function MainVisualization({ handleSideTab, activeSideTab, currentTopic }) {
+export default function MainVisualization({
+  handleSideTab,
+  activeSideTab,
+  currentTopic,
+}) {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [visualizationData, setVisualizationData] = useState(null);
@@ -516,164 +47,254 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
   const [highlightedElements, setHighlightedElements] = useState([]);
   const [content, setContent] = useState("");
   const [isHighlightPlayButton, setIsHighlightPlayButton] = useState(false);
-  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(true);
+  const [isPreparingAudio, setIsPreparingAudio] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [realtimeSession, setRealtimeSession] = useState(null);
-  const [isMicActive, setIsMicActive] = useState(true);
-  const microphoneStreamRef = useRef(null);
-  const audioContextRef = useRef(null);
-  const analyserRef = useRef(null);
-  const microphoneSourceRef = useRef(null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [isNarrationPlaying, setIsNarrationPlaying] = useState(false);
-  const audioPlayerRef = useRef(null);
+  const [isMicActive, setIsMicActive] = useState(false);
   const [isNarrationOnly, setIsNarrationOnly] = useState(false);
+  const [isNarrationReady, setIsNarrationReady] = useState(false);
+  const [showMicOffPopup, setShowMicOffPopup] = useState(false);
+  const [initialMicShow, setInitialMicShow] = useState(true);
+  const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
 
-  // Initialize Socket.IO connection
+  const microphoneStreamRef = useRef(null);
+  const audioPlayerRef = useRef(null);
+  const speechRecognitionRef = useRef(null);
+
   useEffect(() => {
     const newSocket = io(process.env.NEXT_PUBLIC_SHODH_ML_URL, {
-      transports: ['websocket', 'polling'],
+      transports: ["websocket", "polling"],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       timeout: 20000,
-      autoConnect: true
+      autoConnect: true,
     });
 
-    newSocket.on('connect', () => {
-      console.log('Connected to server');
+    newSocket.on("connect", () => {
+      console.log("Connected to server");
       setIsConnected(true);
-      if (isInitialLoad) {
-        setIsInitialLoad(false);
-        handleTopicChange(currentTopic || 'er');
+      if (currentTopic) {
+        loadVisualization(currentTopic);
       }
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('Disconnected from server');
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from server");
       setIsConnected(false);
     });
 
-    newSocket.on('visualization_response', (data) => {
-      console.log('Received visualization data:', data);
+    newSocket.on("visualization_response", (data) => {
+      console.log("Received visualization data:", data);
       setVisualizationData(data);
       window.visualizationData = data;
       setIsLoading(false);
+      setIsLoadingAudio(false);
       setIsNarrationOnly(true);
+      setIsNarrationReady(true);
+      setIsHighlightPlayButton(true);
     });
 
-    newSocket.on('error', (err) => {
-      console.error('Socket error:', err);
-      setError(`Error: ${err.message || 'Unknown error'}`);
+    newSocket.on("error", (err) => {
+      console.error("Socket error:", err);
+      setError(`Error: ${err.message || "Unknown error"}`);
       setIsLoading(false);
+      setIsLoadingAudio(false);
     });
 
     setSocket(newSocket);
 
     return () => {
-      if (newSocket) {
-        newSocket.disconnect();
-      }
+      if (newSocket) newSocket.disconnect();
     };
-  }, [isInitialLoad, currentTopic]);
+  }, [currentTopic]);
 
-  const handleTopicChange = (topic) => {
-    if (isNarrationPlaying && audioPlayerRef.current) {
-      audioPlayerRef.current.stopNarration();
-      setIsNarrationPlaying(false);
-      setIsNarrationOnly(false);
+  useEffect(() => {
+    if (currentTopic) {
+      const placeholderData = getPlaceholderData(currentTopic);
+      setVisualizationData(placeholderData);
+      setIsLoadingAudio(true);
+      setIsHighlightPlayButton(false);
+      setIsNarrationReady(false);
     }
-    
-    setHighlightedElements([]);
-    const placeholderData = getPlaceholderData(topic);
-    setVisualizationData(placeholderData);
-    
-    if (topic) {
-      loadVisualization(topic);
+  }, [currentTopic]);
+
+  const loadVisualization = (topic) => {
+    if (!socket || !isConnected) {
+      console.log("Socket not connected, using placeholder data");
+      setIsLoadingAudio(false);
+      setIsNarrationOnly(true);
+      setIsNarrationReady(true);
+      setIsHighlightPlayButton(true);
+      return;
     }
+    setIsLoading(true);
+    setError(null);
+    socket.emit("visualization", { topic });
   };
 
   const getPlaceholderData = (topic) => {
-    if (topic === 'er') {
+    if (topic === "er") {
       return {
         nodes: [
           { id: "student", name: "Student", type: "entity", attributes: [
             { name: "student_id", isKey: true },
             { name: "name", isKey: false },
-            { name: "email", isKey: false }
+            { name: "email", isKey: false },
           ]},
           { id: "course", name: "Course", type: "entity", attributes: [
             { name: "course_id", isKey: true },
             { name: "title", isKey: false },
-            { name: "credits", isKey: false }
+            { name: "credits", isKey: false },
           ]},
-          { id: "enrollment", name: "Enrolls", type: "relationship" }
+          { id: "enrollment", name: "Enrolls", type: "relationship" },
         ],
         edges: [
           { source: "student", target: "enrollment", type: "participates" },
-          { source: "enrollment", target: "course", type: "participates" }
+          { source: "enrollment", target: "course", type: "participates" },
         ],
         topic: topic,
         narration: "Loading narration...",
-        narration_timestamps: []
+        narration_timestamps: [],
       };
     }
-    // Add other placeholder data as in original code...
-    else {
-      return {
-        nodes: [
-          { id: `${topic}_node1`, name: `${topic.charAt(0).toUpperCase() + topic.slice(1)} Node 1`, type: "generic" },
-          { id: `${topic}_node2`, name: `${topic.charAt(0).toUpperCase() + topic.slice(1)} Node 2`, type: "generic" },
-          { id: `${topic}_node3`, name: `${topic.charAt(0).toUpperCase() + topic.slice(1)} Node 3`, type: "generic" }
-        ],
-        edges: [
-          { source: `${topic}_node1`, target: `${topic}_node2`, type: "connection" },
-          { source: `${topic}_node2`, target: `${topic}_node3`, type: "connection" }
-        ],
-        topic: topic,
-        narration: `Loading ${topic.replace('_', ' ')} visualization...`,
-        narration_timestamps: []
-      };
-    }
+    return {
+      nodes: [
+        { id: `${topic}_node1`, name: `${topic.charAt(0).toUpperCase() + topic.slice(1)} Node 1`, type: "generic" },
+        { id: `${topic}_node2`, name: `${topic.charAt(0).toUpperCase() + topic.slice(1)} Node 2`, type: "generic" },
+        { id: `${topic}_node3`, name: `${topic.charAt(0).toUpperCase() + topic.slice(1)} Node 3`, type: "generic" },
+      ],
+      edges: [
+        { source: `${topic}_node1`, target: `${topic}_node2`, type: "connection" },
+        { source: `${topic}_node2`, target: `${topic}_node3`, type: "connection" },
+      ],
+      topic: topic,
+      narration: `Loading ${topic.replace("_", " ")} visualization...`,
+      narration_timestamps: [],
+    };
   };
 
-  const loadVisualization = (topic) => {
+  const initiateWebRTCSession = async (topic, doubtText = "") => {
     if (!socket || !isConnected) {
-      setError('Not connected to server');
+      setError("Not connected to server");
       return;
     }
-    setIsLoading(true);
-    setError(null);
-    socket.emit('visualization', { topic });
-  };
 
-  const initiateWebRTCSession = (topic, doubtText = '') => {
-    if (!socket || !isConnected) {
-      setError('Not connected to server');
-      return;
+    if (!isMicActive || !microphoneStreamRef.current) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphoneStreamRef.current = stream;
+        setIsMicActive(true);
+      } catch (err) {
+        setError(`Microphone access denied: ${err.message}`);
+        return;
+      }
     }
+
     const sessionId = Date.now().toString();
     setRealtimeSession({
       sessionId: sessionId,
       topic: topic,
       doubt: doubtText,
-      visualizationData: visualizationData
+      visualizationData: visualizationData,
+      microphoneStream: microphoneStreamRef.current,
     });
-    socket.emit('start_webrtc_session', {
+    socket.emit("start_webrtc_session", {
       sessionId: sessionId,
       topic: topic,
-      doubt: doubtText
+      doubt: doubtText,
     });
   };
 
+  const startSpeechRecognition = () => {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      setError("Speech recognition not supported in this browser");
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false; // Stop after one utterance
+    recognition.interimResults = false; // Only final results
+    recognition.lang = "en-US";
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setContent(transcript); // Populate input field with transcribed text
+      setIsSpeechRecognitionActive(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setError(`Speech recognition error: ${event.error}`);
+      setIsSpeechRecognitionActive(false);
+    };
+
+    recognition.onend = () => {
+      setIsSpeechRecognitionActive(false);
+    };
+
+    speechRecognitionRef.current = recognition;
+    recognition.start();
+    setIsSpeechRecognitionActive(true);
+  };
+
+  const stopSpeechRecognition = () => {
+    if (speechRecognitionRef.current) {
+      speechRecognitionRef.current.stop();
+      speechRecognitionRef.current = null;
+      setIsSpeechRecognitionActive(false);
+    }
+  };
+
   const handleDoubtSubmit = () => {
-    if (!content.trim()) return;
+    if (isPlaying) return;
+    if (!content.trim() || !currentTopic) {
+      setError("Please enter a doubt and ensure a topic is selected");
+      return;
+    }
+    if (!socket || !isConnected) {
+      setError("Not connected to server, cannot submit doubt");
+      return;
+    }
     setIsLoading(true);
-    if (isNarrationPlaying && audioPlayerRef.current) {
+    if (isPlaying && audioPlayerRef.current) {
       audioPlayerRef.current.stopNarration();
-      setIsNarrationPlaying(false);
+      setIsPlaying(false);
+      setIsHighlightPlayButton(true);
     }
     initiateWebRTCSession(currentTopic, content);
+    setContent("");
+    stopSpeechRecognition(); // Ensure speech recognition is off after submitting
+  };
+
+  const toggleMicrophone = async () => {
+    if (isPlaying) return;
+    if (!isMicActive) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphoneStreamRef.current = stream;
+        setIsMicActive(true);
+        if (realtimeSession && audioPlayerRef.current) {
+          audioPlayerRef.current.updateMicrophoneStream(stream);
+        }
+      } catch (err) {
+        setError(`Microphone access denied: ${err.message}`);
+      }
+    } else {
+      if (microphoneStreamRef.current && microphoneStreamRef.current.getTracks) {
+        microphoneStreamRef.current.getTracks().forEach((track) => track.stop());
+        microphoneStreamRef.current = null;
+        setIsMicActive(false);
+        if (realtimeSession && audioPlayerRef.current) {
+          audioPlayerRef.current.updateMicrophoneStream(null);
+        }
+        if (!isPlaying && realtimeSession) {
+          setShowMicOffPopup(true);
+        }
+      }
+      stopSpeechRecognition();
+    }
   };
 
   const renderVisualization = () => {
@@ -695,160 +316,215 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('start_webrtc_session', (data) => {
-      setRealtimeSession(prevSession => {
+    socket.on("start_webrtc_session", (data) => {
+      setRealtimeSession((prevSession) => {
         if (prevSession) return prevSession;
-        if (!visualizationData && data.topic) {
-          socket.emit('visualization', { topic: data.topic });
-        }
         setHighlightedElements([]);
         return {
           sessionId: data.sessionId,
           topic: data.topic,
           doubt: data.doubt,
-          visualizationData: visualizationData
+          visualizationData: visualizationData,
+          microphoneStream: microphoneStreamRef.current,
         };
       });
     });
     return () => {
-      socket.off('start_webrtc_session');
+      socket.off("start_webrtc_session");
     };
   }, [socket, visualizationData]);
 
-  const handleNarrationComplete = (highlightedNodes, isComplete = true) => {
+  const handleNarrationComplete = (highlightedNodes, isComplete) => {
     if (highlightedNodes && highlightedNodes.length > 0) {
-      if (visualizationData && visualizationData.nodes) {
-        const validNodeIds = visualizationData.nodes.map(node => node.id);
-        const validHighlights = highlightedNodes.filter(id => validNodeIds.includes(id));
+      if (currentTopic === "gdp") {
+        setHighlightedElements(highlightedNodes);
+      } else if (visualizationData && visualizationData.nodes) {
+        const validNodeIds = visualizationData.nodes.map((node) => node.id);
+        const validHighlights = highlightedNodes.filter((id) => validNodeIds.includes(id));
         setHighlightedElements(validHighlights);
       } else {
         setHighlightedElements([...highlightedNodes]);
       }
-    } else if (highlightedNodes && highlightedNodes.length === 0) {
+    } else if (isComplete) {
+      setIsPlaying(false);
+      setIsNarrationOnly(false);
+      setIsPreparingAudio(false);
+      setIsHighlightPlayButton(true);
+      setHighlightedElements([]);
+    } else {
       setHighlightedElements([]);
     }
-    if (isComplete) {
-      setIsNarrationPlaying(false);
+  };
+
+  const handleMicOffPopupChoice = async (choice) => {
+    setShowMicOffPopup(false);
+    if (choice === "resume") {
       if (realtimeSession) {
-        setRealtimeSession(null);
+        closeAISession();
+      }
+      setIsPreparingAudio(true);
+      audioPlayerRef.current.playNarrationScript(currentTopic)
+        .then(() => {
+          setIsPlaying(true);
+          setIsHighlightPlayButton(false);
+        })
+        .catch((err) => {
+          console.error("Error playing narration:", err);
+          setError("Failed to play narration");
+          setIsPreparingAudio(false);
+          setIsHighlightPlayButton(true);
+        });
+    } else if (choice === "doubt") {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphoneStreamRef.current = stream;
+        setIsMicActive(true);
+        if (realtimeSession && audioPlayerRef.current) {
+          audioPlayerRef.current.updateMicrophoneStream(stream);
+        }
+      } catch (err) {
+        setError(`Microphone access denied: ${err.message}`);
       }
     }
   };
 
-  const handlePlayNarration = () => {
-    if (currentTopic) {
-      setIsNarrationOnly(true);
-      setTimeout(() => {
-        if (audioPlayerRef.current) {
-          audioPlayerRef.current.stopNarration();
-          audioPlayerRef.current.playNarrationScript(currentTopic);
-          setIsNarrationPlaying(true);
+  const handleTogglePlayPause = async () => {
+    setInitialMicShow(false);
+    if (!isNarrationReady || !audioPlayerRef.current) return;
+
+    if (isPlaying) {
+      audioPlayerRef.current.stopNarration();
+      setIsPlaying(false);
+      setIsPreparingAudio(false);
+      setIsHighlightPlayButton(true);
+
+      // Turn on the mic and start speech recognition for doubt input
+      if (!isMicActive) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          microphoneStreamRef.current = stream;
+          setIsMicActive(true);
+          startSpeechRecognition(); // Start capturing doubt via speech
+        } catch (err) {
+          setError(`Microphone access denied: ${err.message}`);
         }
-      }, 100);
+      } else {
+        startSpeechRecognition(); // Mic is already on, just start recognition
+      }
+    } else {
+      if (realtimeSession) {
+        closeAISession();
+      }
+      stopSpeechRecognition(); // Stop speech recognition if active
+      setIsPreparingAudio(true);
+      audioPlayerRef.current.playNarrationScript(currentTopic)
+        .then(() => {
+          setIsPlaying(true);
+          setIsHighlightPlayButton(false);
+        })
+        .catch((err) => {
+          console.error("Error playing narration:", err);
+          setError("Failed to play narration");
+          setIsPreparingAudio(false);
+          setIsHighlightPlayButton(true);
+        });
     }
   };
 
-  const toggleMicrophone = () => {
-    setIsMicActive(!isMicActive);
-    // Add microphone logic here if needed
+  const handleInputChange = (e) => {
+    if (!isPlaying) {
+      setContent(e.target.value);
+    }
+  };
+
+  const handlePlayingChange = (isPlayingNow) => {
+    if (isPlayingNow) {
+      setIsPreparingAudio(false);
+      setIsPlaying(true);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleDoubtSubmit();
+    }
   };
 
   const closeAISession = () => {
     if (realtimeSession) {
       setRealtimeSession(null);
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.stopNarration();
+      }
     }
-    if (isNarrationPlaying && audioPlayerRef.current) {
+    if (isPlaying && audioPlayerRef.current) {
       audioPlayerRef.current.stopNarration();
-      setIsNarrationPlaying(false);
+      setIsPlaying(false);
+      setIsPreparingAudio(false);
+      setIsHighlightPlayButton(true);
     }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleDoubtSubmit();
-      setContent("");
+    if (microphoneStreamRef.current && microphoneStreamRef.current.getTracks) {
+      microphoneStreamRef.current.getTracks().forEach((track) => track.stop());
+      microphoneStreamRef.current = null;
+      setIsMicActive(false);
     }
+    stopSpeechRecognition();
   };
 
   return (
-    <div className="app-container relative">
+    <div className="app-container">
       <header>
         <h1>Database Visualization</h1>
         <div className="connection-status">
-          {isConnected ? (
-            <span className="connected">Connected</span>
-          ) : (
-            <span className="disconnected">Disconnected</span>
-          )}
+          {isConnected ? <span>Connected</span> : <span>Disconnected</span>}
         </div>
       </header>
 
       <div className="main-content">
         <div className="visualization-container">
           <VisualizationPanel>
-            {error ? (
-              <div className="error">{error}</div>
-            ) : (
-              renderVisualization()
-            )}
+            {error ? <div>{error}</div> : renderVisualization()}
             {isLoading && (
-              <div className="loading-overlay">
+              <div>
                 <div className="loading-spinner"></div>
               </div>
             )}
           </VisualizationPanel>
         </div>
 
-        {realtimeSession ? (
-          <div className="realtime-container">
-            <RealtimeAudioPlayer 
+        <div style={{ display: realtimeSession ? "block" : "none" }}>
+          {realtimeSession ? (
+            <RealtimeAudioPlayer
               ref={audioPlayerRef}
               topic={realtimeSession.topic}
               doubt={realtimeSession.doubt}
               sessionId={realtimeSession.sessionId}
               onComplete={handleNarrationComplete}
               visualizationData={visualizationData}
+              microphoneStream={microphoneStreamRef.current}
+              onPlayingChange={handlePlayingChange}
             />
-          </div>
-        ) : (
-          <div className="placeholder-message">
-            <h3>Interactive Database Learning</h3>
-            <p>Explore the current topic: {currentTopic}</p>
-            {visualizationData && (
-              <div className="narration-controls">
-                <p>The visualization is now loaded. You can:</p>
-                <button 
-                  className={`play-narration-btn ${isNarrationPlaying ? 'playing' : ''}`}
-                  onClick={handlePlayNarration}
-                  disabled={isNarrationPlaying}
-                >
-                  {isNarrationPlaying ? 'Narration Playing...' : 'Play Narration'}
-                </button>
-                <p>Or ask questions about the topic using the input below.</p>
-              </div>
-            )}
-            {isNarrationOnly && visualizationData && (
-              <div style={{ display: 'none' }}>
-                <RealtimeAudioPlayer 
-                  ref={audioPlayerRef}
-                  topic={currentTopic}
-                  doubt=""
-                  sessionId={`narration-${Date.now()}`}
-                  onComplete={handleNarrationComplete}
-                  visualizationData={visualizationData}
-                />
-              </div>
-            )}
-          </div>
-        )}
+          ) : (
+            visualizationData && (
+              <RealtimeAudioPlayer
+                ref={audioPlayerRef}
+                topic={currentTopic}
+                doubt=""
+                sessionId={`narration-${Date.now()}`}
+                onComplete={handleNarrationComplete}
+                visualizationData={visualizationData}
+                microphoneStream={null}
+                onPlayingChange={handlePlayingChange}
+              />
+            )
+          )}
+        </div>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 flex w-full p-2 items-center gap-2 my-2 z-30">
         <div className="flex gap-2">
           <button
-            className={`border border-[var(--Border-Secondary)] rounded-lg p-2 ${
-              activeSideTab === 0 ? "bg-barBgColor" : ""
-            }`}
+            className={`border border-[var(--Border-Secondary)] rounded-lg p-2 ${activeSideTab === 0 ? "bg-barBgColor" : ""}`}
             onClick={() => handleSideTab(0)}
           >
             <Image
@@ -860,9 +536,7 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
             />
           </button>
           <button
-            className={`border border-[var(--Border-Secondary)] rounded-lg p-2 ${
-              activeSideTab === 1 ? "bg-barBgColor" : ""
-            }`}
+            className={`border border-[var(--Border-Secondary)] rounded-lg p-2 ${activeSideTab === 1 ? "bg-barBgColor" : ""}`}
             onClick={() => handleSideTab(1)}
           >
             <Image
@@ -878,32 +552,29 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
           <div className="flex gap-3 w-full">
             <Image src={"/UploadFileIcon.svg"} alt="image" height={24} width={24} />
             <input
-              placeholder="Ask me anything!"
-              className="border-none focus:outline-none bg-transparent w-full text-nowrap"
-              onChange={(e) => setContent(e.target.value)}
+              placeholder={isSpeechRecognitionActive ? "Listening to your doubt..." : "Ask me anything!"}
+              className={`border-none focus:outline-none bg-transparent w-full text-nowrap ${isPlaying || initialMicShow ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onChange={handleInputChange}
               type="text"
               value={content}
               onKeyDown={handleKeyDown}
+              disabled={isPlaying || initialMicShow || isSpeechRecognitionActive}
             />
           </div>
           <Image
             src={"/SendIcon.svg"}
-            className="cursor-pointer"
+            className={`cursor-pointer ${isPlaying ? 'opacity-50 pointer-events-none' : ''}`}
             alt="image"
             height={32}
             width={32}
-            onClick={() => {
-              handleDoubtSubmit();
-              setContent("");
-            }}
+            onClick={handleDoubtSubmit}
           />
         </div>
         <div className="flex gap-2">
           <button
-            className={`p-2 border border-[var(--Border-Secondary)] rounded-lg ${
-              isMicActive ? "text-red-500" : ""
-            } transition-colors relative`}
-            // onClick={toggleMicrophone}
+            className={`p-2 border border-[var(--Border-Secondary)] rounded-lg ${isPlaying || initialMicShow ? 'opacity-50 cursor-not-allowed' : ''} ${isMicActive ? "text-red-500" : ""} transition-colors relative`}
+            onClick={toggleMicrophone}
+            disabled={isPlaying || initialMicShow}
           >
             <div className="relative">
               <MdMicNone size="1.5em" className={isMicActive ? "relative z-10" : ""} />
@@ -914,13 +585,13 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
           </button>
           <button
             className={`border border-[var(--Border-Secondary)] rounded-lg p-2 
-              ${isLoadingAudio ? "opacity-50 cursor-not-allowed" : ""} 
+              ${(isLoadingAudio || isPreparingAudio) ? "opacity-50 cursor-not-allowed" : ""} 
               ${isPlaying ? "bg-blue-500" : ""} 
-              ${isHighlightPlayButton ? "animate-pulse border-red-500 shadow-[0_0_10px_#00ff00]" : ""}`}
-            disabled={isLoadingAudio}
-            onClick={() => setIsPlaying(!isPlaying)}
+              ${isHighlightPlayButton && !isPreparingAudio ? "animate-pulse border-red-500 shadow-[0_0_10px_#00ff00]" : ""}`}
+            disabled={isLoadingAudio || isPreparingAudio || !isNarrationReady}
+            onClick={handleTogglePlayPause}
           >
-            {isLoadingAudio ? (
+            {isLoadingAudio || isPreparingAudio ? (
               <div className="loader border-4 border-t-transparent border-gray-300 rounded-full w-6 h-6 animate-spin"></div>
             ) : isPlaying ? (
               <MdPause size="1.3em" />
@@ -936,6 +607,28 @@ export default function MainVisualization({ handleSideTab, activeSideTab, curren
           </button>
         </div>
       </div>
+      {showMicOffPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col gap-4">
+            <h2 className="text-base font-semibold text-black">Microphone Turned Off</h2>
+            <p className="text-black">Do you want to resume your lecture or still have a doubt?</p>
+            <div className="flex gap-4">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded Hover:bg-blue-600"
+                onClick={() => handleMicOffPopupChoice("resume")}
+              >
+                Resume Lecture
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                onClick={() => handleMicOffPopupChoice("doubt")}
+              >
+                Still Have Doubt
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

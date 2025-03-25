@@ -189,6 +189,7 @@ export default function KnowledgeGraphMain({ setActiveSideTab, setCurrentTopic }
     24: "shared_nothing",
     25: "distributed_database",
     27: "oop_concepts",
+    37:"gdp",
   };
 
   const getParentTopicId = (topicId: number): number | null => {
@@ -249,25 +250,19 @@ export default function KnowledgeGraphMain({ setActiveSideTab, setCurrentTopic }
   // Set initial state and fetch data
   useEffect(() => {
     
-    // Set initial state immediately if CurrentTopicId is null (first load)
-    if (CurrentTopicId === null) {
-      dispatch(setCurrentTopicId(9));
-      setCurrentTopic("er");
-      setExpandedTopic({ topic_6: true });
-      
-    }
 
     // Fetch data and sync state
     dispatch(getKnowledegeGrpahData({ moduleId: 1, courseId: 2 }))
       .unwrap()
       .then(() => {
-        console.log("Data fetched, CurrentTopicId:", CurrentTopicId, "TopicsData available:", !!TopicsData);
+        
         const topicIdToUse = CurrentTopicId ?? 9; // Use persisted value or default to 9
         const parentTopicId = getParentTopicId(topicIdToUse);
         const visualizationName = TOPIC_ID_TO_VISUALIZATION[topicIdToUse] || "er";
 
         // Sync state after fetch
         setCurrentTopic(visualizationName);
+        
         if (parentTopicId) {
           setExpandedTopic({ [`topic_${parentTopicId}`]: true });
           console.log("Restored expandedTopic after fetch:", { [`topic_${parentTopicId}`]: true });
@@ -276,6 +271,13 @@ export default function KnowledgeGraphMain({ setActiveSideTab, setCurrentTopic }
         }
       })
       .catch((err) => console.error("Error while fetching", err));
+
+      if (CurrentTopicId === null) {
+        dispatch(setCurrentTopicId(9));
+        setCurrentTopic("er");
+        setExpandedTopic({ topic_6: true });
+        
+      }
   }, [dispatch]); // Only run on mount
 
 
