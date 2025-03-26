@@ -153,43 +153,6 @@ const RealtimeAudioPlayer = forwardRef(({ topic, doubt, sessionId, onComplete, v
   };
   
   // Start WebRTC session
-  // useEffect(() => {
-  //   mountedRef.current = true;
-  //   let isEffectActive = true;
-
-  //   if (!topic || !doubt || !sessionId) {
-  //     setConnectionStatus('Missing topic, doubt, or sessionId');
-  //     return;
-  //   }
-
-  //   if (!sessionInProgressRef.current) {
-  //     sessionInProgressRef.current = true;
-  //     sessionStartedTimeRef.current = Date.now();
-  //     addDebugInfo(`Starting new session with ID: ${sessionId}`);
-
-  //     // Start the session only if we have a microphone stream or don't need one
-  //     if (microphoneStream || doubt.trim() === "") {
-  //       startSession().catch((err) => {
-  //         if (mountedRef.current && isEffectActive) {
-  //           addDebugInfo(`Error starting session: ${err.message}`);
-  //           setError(`Failed to start session: ${err.message}`);
-  //         }
-  //       });
-  //     } else {
-  //       setError("No microphone stream available for WebRTC session");
-  //     }
-  //   }
-
-  //   return () => {
-  //     addDebugInfo('Component unmounting, cleaning up session');
-  //     isEffectActive = false;
-  //     mountedRef.current = false;
-  //     stopSession();
-  //     sessionInProgressRef.current = false;
-  //     sessionStartedTimeRef.current = null;
-  //   };
-  // }, [topic, doubt, sessionId, microphoneStream]);
-
   useEffect(() => {
     mountedRef.current = true;
     let isEffectActive = true;
@@ -230,36 +193,36 @@ const RealtimeAudioPlayer = forwardRef(({ topic, doubt, sessionId, onComplete, v
     return doubt.trim() !== ""; // Mic only required for WebRTC, not narration
   };
   // Request microphone access
-  const requestMicrophoneAccess = async () => {
-    try {
-      setIsMicrophoneRequested(true);
-      addDebugInfo('Requesting microphone access');
+  // const requestMicrophoneAccess = async () => {
+  //   try {
+  //     setIsMicrophoneRequested(true);
+  //     addDebugInfo('Requesting microphone access');
       
-      // Show a message to the user
-      setConnectionStatus('Please grant microphone access when prompted');
+  //     // Show a message to the user
+  //     setConnectionStatus('Please grant microphone access when prompted');
       
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        } 
-      });
+  //     const stream = await navigator.mediaDevices.getUserMedia({ 
+  //       audio: {
+  //         echoCancellation: true,
+  //         noiseSuppression: true,
+  //         autoGainControl: true
+  //       } 
+  //     });
       
-      microphoneStreamRef.current = stream;
-      setMicrophoneAccess(true);
-      addDebugInfo('Microphone access granted');
-      setConnectionStatus('Microphone access granted, starting session...');
-      return stream;
-    } catch (err) {
-      addDebugInfo(`Microphone access denied: ${err.message}`);
-      setMicrophoneAccess(false);
-      setConnectionStatus('Microphone access denied. Some features may not work.');
-      throw err;
-    } finally {
-      setIsMicrophoneRequested(false);
-    }
-  };
+  //     microphoneStreamRef.current = stream;
+  //     setMicrophoneAccess(true);
+  //     addDebugInfo('Microphone access granted');
+  //     setConnectionStatus('Microphone access granted, starting session...');
+  //     return stream;
+  //   } catch (err) {
+  //     addDebugInfo(`Microphone access denied: ${err.message}`);
+  //     setMicrophoneAccess(false);
+  //     setConnectionStatus('Microphone access denied. Some features may not work.');
+  //     throw err;
+  //   } finally {
+  //     setIsMicrophoneRequested(false);
+  //   }
+  // };
   
   // Add a retry function
   const retryConnection = () => {

@@ -88,11 +88,11 @@ export default function TeachingMain() {
   };
 
   return (
-    <div className="p-5 flex gap-3">
+    <div className="p-5 flex gap-3 h-full ">
       {activeSideTab !== -1 && (
         <div
           className={
-            "side_scroll border flex flex-col relative h-full min-h-[620px] overflow-y-auto gap-3 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white w-full max-w-[300px]"
+            "side_scroll border flex flex-col h-full min-h-[620px] overflow-y-auto gap-3 border-[var(--Border-Secondary)] rounded-xl p-5 bg-black text-white min-w-[300px]"
           }
         >
           {activeSideTab === 0 ? (
