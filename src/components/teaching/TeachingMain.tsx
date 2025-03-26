@@ -76,6 +76,7 @@ import KnowledgeGraphMain from "./KnowledgeGraph/KnowledgeGraphMain";
 import NotesOverlay from "./Overlay/NotesOverlay";
 import { Message } from "@/src/models/DoubtModel";
 import MainVisualization from './MainVisualization';
+import PracticeQuestion from "./PracticeQuestion";
 
 export default function TeachingMain() {
   const [activeSideTab, setActiveSideTab] = useState<number>(0);
@@ -112,13 +113,15 @@ export default function TeachingMain() {
         </div>
       )}
 
-      <div className="border border-[var(--Border-Secondary)] h-full min-h-[620px] relative flex flex-col p-3 w-full rounded-xl bg-black">
+      {/* <div className="border border-[var(--Border-Secondary)] h-full min-h-[620px] relative flex flex-col p-3 w-full rounded-xl bg-black">
         <MainVisualization
           handleSideTab={handleSideTab}
           activeSideTab={activeSideTab}
           currentTopic={currentTopic}
         />
-      </div>
+      </div> */}
+
+<PracticeQuestion/>
     </div>
   );
 }
