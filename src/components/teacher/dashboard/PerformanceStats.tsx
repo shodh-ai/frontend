@@ -37,7 +37,7 @@ const PerformanceStats = () => {
   ];
 
   const StatItem = ({ label, value, trend, trendPeriod }: StatProps) => (
-    <div className='pl-4 first:pl-0'>
+    <div className='md:pl-4 first:pl-0 min-w-[180px]'>
       <h3 className="text-zinc-400 mb-2">{label}</h3>
       <div className="flex items-center mb-2">
         <span className="text-2xl font-semibold mr-2">{value}</span>
@@ -50,7 +50,7 @@ const PerformanceStats = () => {
   );
 
   return (
-    <div className="flex w-max gap-4 *:border-r *:border-zinc-700 *:pr-16">
+    <div className="flex justify-between md:justify-start flex-wrap *:border-r gap-4 lg:gap-6">
       {stats.map((stat, index) => (
         <StatItem key={index} {...stat} />
       ))}

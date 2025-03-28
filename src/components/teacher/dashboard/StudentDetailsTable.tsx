@@ -1,6 +1,6 @@
 import React from 'react';
 import { Settings2, SearchIcon } from 'lucide-react';
-import { studentData } from '../dashboard/StudentData';
+import { studentData } from './StudentData';
 
 interface StudentDetailsTableProps {
   searchQuery: string;
@@ -20,19 +20,19 @@ const StudentDetailsTable: React.FC<StudentDetailsTableProps> = ({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-0 md:items-center justify-between mb-2">
         <h2 className="text-lg">Student Details</h2>
-        <div className="flex items-center gap-4">
-          <button className="bg-zinc-800 p-2 rounded-lg">
+        <div className="flex items-center gap-1 sm:gap-4">
+          <button className="bg-zinc-800 hidden sm:block p-2 rounded-lg">
             <Settings2 size={24} />
           </button>
           <div className="relative">
             <input
               type="text"
-              placeholder="Search by name, ID, or growth status"
+              placeholder="Search by name, ID"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-zinc-950 border border-zinc-700 rounded-lg pl-10 pr-4 py-2 w-80 focus:outline-none"
+              className="bg-zinc-950 border border-zinc-700 rounded-lg pl-10 sm:pr-4 py-2 w-max md:w-80  focus:outline-none"
             />
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" size={18} />
           </div>
@@ -40,7 +40,7 @@ const StudentDetailsTable: React.FC<StudentDetailsTableProps> = ({
       </div>
 
       {/* Table with scroll */}
-      <div className="overflow-y-auto side_scroll overflow-x-hidden h-[calc(100vh-26rem)]">
+      <div className="overflow-y-auto side_scroll overflow-x-auto h-[calc(100vh-26rem)]">
         <table className="w-full">
           <thead className="text-zinc-300">
             <tr className=''>
