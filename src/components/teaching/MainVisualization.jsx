@@ -34,10 +34,14 @@ const VISUALIZATIONS = {
   gdp: GdpVisualization,
 };
 
+// Define the topic sequence
+const TOPIC_SEQUENCE = ["er", "gdp", "equation"];
+
 export default function MainVisualization({
   handleSideTab,
   activeSideTab,
   currentTopic,
+  setCurrentTopic,
 }) {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -57,6 +61,7 @@ export default function MainVisualization({
   const [showMicOffPopup, setShowMicOffPopup] = useState(false);
   const [initialMicShow, setInitialMicShow] = useState(true);
   const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
+  const [showLectureCompletePopup, setShowLectureCompletePopup] = useState(false);
 
   const microphoneStreamRef = useRef(null);
   const audioPlayerRef = useRef(null);
@@ -89,7 +94,7 @@ export default function MainVisualization({
       setVisualizationData(data);
       window.visualizationData = data;
       setIsLoading(false);
-      setIsLoadingAudio(false);
+      setIsLoadingAudio(false); // Audio is ready when visualization data is received
       setIsNarrationOnly(true);
       setIsNarrationReady(true);
       setIsHighlightPlayButton(true);
@@ -109,15 +114,36 @@ export default function MainVisualization({
     };
   }, [currentTopic]);
 
+  // Reset audio states when topic changes
   useEffect(() => {
     if (currentTopic) {
-      const placeholderData = getPlaceholderData(currentTopic);
-      setVisualizationData(placeholderData);
-      setIsLoadingAudio(true);
+      // Stop and clear any existing audio
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.stopNarration();
+      }
+      setIsPlaying(false);
+      setIsPreparingAudio(false);
+      setIsLoadingAudio(true); // Show loader until new audio is ready
       setIsHighlightPlayButton(false);
       setIsNarrationReady(false);
+      setRealtimeSession(null);
+      setHighlightedElements([]);
+
+      // Load new visualization and placeholder data
+      const placeholderData = getPlaceholderData(currentTopic);
+      setVisualizationData(placeholderData);
+      if (socket && isConnected) {
+        loadVisualization(currentTopic);
+      } else {
+        // If not connected, simulate audio readiness with placeholder
+        setTimeout(() => {
+          setIsLoadingAudio(false);
+          setIsNarrationReady(true);
+          setIsHighlightPlayButton(true);
+        }, 1000); // Small delay to mimic loading
+      }
     }
-  }, [currentTopic]);
+  }, [currentTopic, socket, isConnected]);
 
   const loadVisualization = (topic) => {
     if (!socket || !isConnected) {
@@ -214,13 +240,13 @@ export default function MainVisualization({
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.continuous = false; // Stop after one utterance
-    recognition.interimResults = false; // Only final results
+    recognition.continuous = false;
+    recognition.interimResults = false;
     recognition.lang = "en-US";
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      setContent(transcript); // Populate input field with transcribed text
+      setContent(transcript);
       setIsSpeechRecognitionActive(false);
     };
 
@@ -265,7 +291,7 @@ export default function MainVisualization({
     }
     initiateWebRTCSession(currentTopic, content);
     setContent("");
-    stopSpeechRecognition(); // Ensure speech recognition is off after submitting
+    stopSpeechRecognition();
   };
 
   const toggleMicrophone = async () => {
@@ -351,6 +377,7 @@ export default function MainVisualization({
       setIsPreparingAudio(false);
       setIsHighlightPlayButton(true);
       setHighlightedElements([]);
+      setShowLectureCompletePopup(true);
     } else {
       setHighlightedElements([]);
     }
@@ -398,24 +425,23 @@ export default function MainVisualization({
       setIsPreparingAudio(false);
       setIsHighlightPlayButton(true);
 
-      // Turn on the mic and start speech recognition for doubt input
       if (!isMicActive) {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           microphoneStreamRef.current = stream;
           setIsMicActive(true);
-          startSpeechRecognition(); // Start capturing doubt via speech
+          startSpeechRecognition();
         } catch (err) {
           setError(`Microphone access denied: ${err.message}`);
         }
       } else {
-        startSpeechRecognition(); // Mic is already on, just start recognition
+        startSpeechRecognition();
       }
     } else {
       if (realtimeSession) {
         closeAISession();
       }
-      stopSpeechRecognition(); // Stop speech recognition if active
+      stopSpeechRecognition();
       setIsPreparingAudio(true);
       audioPlayerRef.current.playNarrationScript(currentTopic)
         .then(() => {
@@ -469,6 +495,20 @@ export default function MainVisualization({
       setIsMicActive(false);
     }
     stopSpeechRecognition();
+  };
+
+  const handleLectureCompleteChoice = (choice) => {
+    setShowLectureCompletePopup(false);
+    if (choice === "next") {
+      const currentIndex = TOPIC_SEQUENCE.indexOf(currentTopic);
+      const nextIndex = (currentIndex + 1) % TOPIC_SEQUENCE.length;
+      setCurrentTopic(TOPIC_SEQUENCE[nextIndex]);
+    } else if (choice === "restart") {
+      setIsLoadingAudio(true);
+      setIsHighlightPlayButton(false);
+      setIsNarrationReady(false);
+      loadVisualization(currentTopic);
+    }
   };
 
   return (
@@ -607,6 +647,7 @@ export default function MainVisualization({
           </button>
         </div>
       </div>
+
       {showMicOffPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col gap-4">
@@ -614,7 +655,7 @@ export default function MainVisualization({
             <p className="text-black">Do you want to resume your lecture or still have a doubt?</p>
             <div className="flex gap-4">
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded Hover:bg-blue-600"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                 onClick={() => handleMicOffPopupChoice("resume")}
               >
                 Resume Lecture
@@ -624,6 +665,31 @@ export default function MainVisualization({
                 onClick={() => handleMicOffPopupChoice("doubt")}
               >
                 Still Have Doubt
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLectureCompletePopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col gap-4">
+            <h2 className="text-base font-semibold text-black">Lecture Completed</h2>
+            <p className="text-black">
+              You have completed the lecture on {currentTopic.toUpperCase()}. Would you like to continue to the next topic or restart this one?
+            </p>
+            <div className="flex gap-4">
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                onClick={() => handleLectureCompleteChoice("next")}
+              >
+                Next Topic
+              </button>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={() => handleLectureCompleteChoice("restart")}
+              >
+                Restart Current Topic
               </button>
             </div>
           </div>

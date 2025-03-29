@@ -17,6 +17,7 @@
 
 // interface DoubtSolverRef {
 //   startDoubtSession: (textDoubt: string) => void;
+//   stopSession: () => void;
 // }
 
 // interface SpeechErrorEvent extends Event {
@@ -67,7 +68,7 @@
 //   const [isFirstLoad, setIsFirstLoad] = useState(true);
 //   const [isDoubtState, setIsDoubtState] = useState(false);
 //   const [microphoneStream, setMicrophoneStream] = useState<MediaStream | null>(null);
-//   const [isSessionActive, setIsSessionActive] = useState(false); // Track WebRTC session
+//   const [isSessionActive, setIsSessionActive] = useState(false);
 
 //   const doubtSolverRef = useRef<DoubtSolverRef | null>(null);
 //   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -81,8 +82,9 @@
 //       audioCache.forEach((url) => URL.revokeObjectURL(url));
 //       if (currentAudio) currentAudio.pause();
 //       stopMicrophone();
+//       if (isSessionActive) doubtSolverRef.current?.stopSession();
 //     };
-//   }, [audioCache, currentAudio]);
+//   }, [audioCache, currentAudio, isSessionActive]);
 
 //   const loadInitialAudio = useCallback(
 //     async (newIndex: number) => {
@@ -173,35 +175,35 @@
 
 //   useEffect(() => {
 //     if (!hasInitialized) {
-//       loadInitialAudio(0);
+//       loadInitialAudio(0); // Preload first audio
 //       setHasInitialized(true);
 //     }
 //   }, [hasInitialized, loadInitialAudio]);
 
 //   const handleTogglePlayPause = () => {
-//     if (!currentAudio || !hasInitialized) return;
+//     if (!hasInitialized) return; // Prevent action before initialization
 
 //     if (isPlaying) {
-//       currentAudio.pause();
+//       if (currentAudio) currentAudio.pause(); // Null check added
 //       setIsPlaying(false);
 //       setIsDoubtState(true);
 //       toggleMicrophone(true); // Mic on when pausing
-//       if (isSessionActive && content.trim()) {
-//         doubtSolverRef.current?.startDoubtSession(content); // Restart session with new doubt if active
-//       }
 //     } else {
-//       currentAudio.play();
-//       setIsPlaying(true);
+//       if (isSessionActive) {
+//         stopMicrophone();
+//         doubtSolverRef.current?.stopSession(); // Stop WebRTC session
+//         setIsSessionActive(false);
+//       }
+//       playAudioForIndex(currentIndex); // Resume from current index
 //       setIsHighlightPlayButton(false);
-//       setIsDoubtState(false);
 //     }
 //   };
 
 //   const startSpeechRecognition = (stream: MediaStream) => {
 //     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-//     if (!SpeechRecognition) {
-//       setError("Speech recognition not supported");
-//       return;
+//     if (!SpeechRecognition || isSessionActive) {
+//       if (!SpeechRecognition) setError("Speech recognition not supported");
+//       return; // Skip speech recognition if session is active
 //     }
 
 //     const recognition = new SpeechRecognition();
@@ -213,9 +215,8 @@
 //       const transcript = Array.from(event.results)
 //         .map((result: SpeechRecognitionResult) => result[0].transcript)
 //         .join("");
-//       setContent(transcript);
-//       if (isSessionActive && transcript.trim()) {
-//         doubtSolverRef.current?.startDoubtSession(transcript); // Send new speech directly to agent
+//       if (!isSessionActive) {
+//         setContent(transcript); // Only update input before session starts
 //       }
 //     };
 
@@ -251,7 +252,7 @@
 //         });
 //         setMicrophoneStream(stream);
 //         setIsMicActive(true);
-//         startSpeechRecognition(stream);
+//         if (!isSessionActive) startSpeechRecognition(stream); // Only use speech recognition before session
 //       } catch (err) {
 //         setError(err instanceof Error ? err.message : "Failed to access microphone");
 //       }
@@ -265,18 +266,18 @@
 //   };
 
 //   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-//     if (e.key === "Enter" && isDoubtState && content.trim() && !isSessionActive) {
+//     if (e.key === "Enter" && isDoubtState && content.trim()) {
 //       doubtSolverRef.current?.startDoubtSession(content);
-//       setIsSessionActive(true); // Mark session as active after first send
-//       setContent("");
+//       if (!isSessionActive) setIsSessionActive(true); // Start session on first send
+//       setContent(""); // Clear input after sending
 //     }
 //   };
 
 //   const handleSendClick = () => {
-//     if (isDoubtState && content.trim() && !isSessionActive) {
+//     if (isDoubtState && content.trim()) {
 //       doubtSolverRef.current?.startDoubtSession(content);
-//       setIsSessionActive(true); // Mark session as active after first send
-//       setContent("");
+//       if (!isSessionActive) setIsSessionActive(true); // Start session on first send
+//       setContent(""); // Clear input after sending
 //     }
 //   };
 
@@ -284,18 +285,13 @@
 //     if (updatedNodes.length > 0) {
 //       console.log("Highlighted nodes:", updatedNodes);
 //     }
-//     if (isComplete && !isSessionActive) {
-//       setIsDoubtState(false);
-//       stopMicrophone();
-//     }
-//     // Keep mic and session alive if isSessionActive is true
 //   };
 
 //   const isBackDisabled = currentIndex === 0 || isLoading;
 //   const isForwardDisabled = currentIndex === startIndex || isLoading;
 
 //   return (
-//     <div className="flex flex-col w-full gap-2 relative overflow-hidden border border-dashBoardButtonBg rounded-xl bg-black">
+//     <div className="flex flex-col h-full w-full gap-2 relative overflow-hidden border border-dashBoardButtonBg rounded-xl bg-black">
 //       {isLoading && (
 //         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
 //           <div className="w-8 h-8 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
@@ -338,7 +334,7 @@
 //           </div>
 //           <Image
 //             src={"/SendIcon.svg"}
-//             className={`cursor-pointer ${isPlaying || !isDoubtState || isSessionActive ? "opacity-50 pointer-events-none" : ""}`}
+//             className={`cursor-pointer ${isPlaying || !isDoubtState ? "opacity-50 pointer-events-none" : ""}`}
 //             alt="image"
 //             height={32}
 //             width={32}
@@ -362,7 +358,7 @@
 //             className={`border border-[var(--Border-Secondary)] rounded-lg p-2 
 //               ${isLoading && isFirstLoad ? "opacity-50 cursor-not-allowed" : ""} 
 //               ${isPlaying ? "bg-blue-500" : ""} 
-//               ${isHighlightPlayButton && !isLoading ? "animate-pulse border-red-500 shadow-[0_0_10px_#00ff00]" : ""}`}
+//               ${!isPlaying && isHighlightPlayButton && !isLoading ? "animate-pulse border-red-500 shadow-[0_0_10px_#00ff00]" : ""}`}
 //             disabled={isLoading && isFirstLoad}
 //             onClick={handleTogglePlayPause}
 //           >
@@ -402,7 +398,6 @@
 //     </div>
 //   );
 // }
-
 
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
@@ -475,6 +470,7 @@ export default function PracticeQuestion({ handleSideTab, activeSideTab, current
   const [isDoubtState, setIsDoubtState] = useState(false);
   const [microphoneStream, setMicrophoneStream] = useState<MediaStream | null>(null);
   const [isSessionActive, setIsSessionActive] = useState(false);
+  const [currentTime, setCurrentTime] = useState<number>(0); // Still keeping this for pausing
 
   const doubtSolverRef = useRef<DoubtSolverRef | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -551,9 +547,13 @@ export default function PracticeQuestion({ handleSideTab, activeSideTab, current
         audio.oncanplaythrough = () => {
           setCurrentAudio(audio);
           setCurrentIndex(newIndex);
-          audio.play();
-          setIsPlaying(true);
-          setIsLoading(false);
+          audio.play().then(() => {
+            setIsPlaying(true);
+            setIsLoading(false);
+          }).catch((err) => {
+            setError("Failed to play audio: " + err.message);
+            setIsLoading(false);
+          });
         };
         audio.onerror = () => {
           setError("Failed to play audio");
@@ -590,17 +590,24 @@ export default function PracticeQuestion({ handleSideTab, activeSideTab, current
     if (!hasInitialized) return; // Prevent action before initialization
 
     if (isPlaying) {
-      if (currentAudio) currentAudio.pause(); // Null check added
+      if (currentAudio) {
+        setCurrentTime(currentAudio.currentTime); // Save the current position
+        currentAudio.pause();
+      }
       setIsPlaying(false);
       setIsDoubtState(true);
       toggleMicrophone(true); // Mic on when pausing
     } else {
+      // Close WebRTC session and stop microphone
       if (isSessionActive) {
         stopMicrophone();
-        doubtSolverRef.current?.stopSession(); // Stop WebRTC session
+        doubtSolverRef.current?.stopSession();
         setIsSessionActive(false);
       }
-      playAudioForIndex(currentIndex); // Resume from current index
+      // Reload audio with loader
+      setIsLoading(true);
+      playAudioForIndex(currentIndex); // Reload audio from start
+      setIsDoubtState(false);
       setIsHighlightPlayButton(false);
     }
   };
@@ -697,7 +704,7 @@ export default function PracticeQuestion({ handleSideTab, activeSideTab, current
   const isForwardDisabled = currentIndex === startIndex || isLoading;
 
   return (
-    <div className="flex flex-col w-full gap-2 relative overflow-hidden border border-dashBoardButtonBg rounded-xl bg-black">
+    <div className="flex flex-col h-full w-full gap-2 relative overflow-hidden border border-dashBoardButtonBg rounded-xl bg-black">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
           <div className="w-8 h-8 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
@@ -722,7 +729,7 @@ export default function PracticeQuestion({ handleSideTab, activeSideTab, current
             className={`border border-[var(--Border-Secondary)] rounded-lg p-2 ${activeSideTab === 1 ? "bg-barBgColor" : ""}`}
             onClick={() => handleSideTab(1)}
           >
-            <Image src={"/QuestionIcon.svg"} alt="image" height={40} width={40} className="min-w-[24px] min-h-[24px] w-full" />
+            <Image src={"/QuestionIcon.svg"} alt="image" height={40} width={40} className="min-w-[24px] min-h-[24pxdistance] w-full" />
           </button>
         </div>
         <div className="bg-[#0D0D0D] border border-[var(--Border-Secondary)] p-2 max-sm:p-1 flex items-center justify-between rounded-md w-full">

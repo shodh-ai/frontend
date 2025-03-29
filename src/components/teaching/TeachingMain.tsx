@@ -30,6 +30,7 @@ export default function TeachingMain() {
             <KnowledgeGraphMain
               setActiveSideTab={setActiveSideTab}
               setCurrentTopic={setCurrentTopic}
+              currentTopic={currentTopic}
             />
           ) : activeSideTab === 1 ? (
             <NotesOverlay
@@ -54,6 +55,8 @@ export default function TeachingMain() {
             handleSideTab={handleSideTab}
             activeSideTab={activeSideTab}
             currentTopic={currentTopic}
+            setCurrentTopic={setCurrentTopic}
+          
           />
         </div>
       )}
