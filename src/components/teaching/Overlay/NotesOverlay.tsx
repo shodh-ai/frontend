@@ -150,7 +150,7 @@ const NotesOverlay: React.FC<NotesOverlayProps> = ({
           </>
         </div>
       </div>
-      <div className="flex bg-zinc-900 rounded p-2  gap-5 flex-1 justify-center items-center absolute bottom-5 left-2 right-2">
+      <div className="flex bg-zinc-900 rounded p-2  gap-5 flex-1 justify-center items-center  bottom-5 left-2 right-2">
         <MdUploadFile
           size="1.5em"
           className="cursor-pointer hover:text-gray-600"
